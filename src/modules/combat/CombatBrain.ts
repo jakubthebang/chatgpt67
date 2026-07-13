@@ -3,6 +3,7 @@ import { Bot } from "mineflayer";
 import { EnemyDetector } from "./EnemyDetector";
 import { CombatMemory } from "./CombatMemory";
 import { DefenseSystem } from "./DefenseSystem";
+import { CombatDecision, CombatAction } from "./CombatDecision";
 
 
 
@@ -14,6 +15,8 @@ export class CombatBrain {
     private memory: CombatMemory;
 
     private defense: DefenseSystem;
+
+    private decision: CombatDecision;
 
 
     private running = false;
@@ -38,6 +41,10 @@ export class CombatBrain {
 
         this.defense =
             new DefenseSystem(bot);
+
+
+        this.decision =
+            new CombatDecision(bot);
 
 
     }
@@ -71,7 +78,7 @@ export class CombatBrain {
                 this.think();
 
 
-            },1000);
+            },500);
 
 
 
@@ -120,17 +127,27 @@ export class CombatBrain {
 
 
 
-        if(!enemy)
+        if(!enemy){
+
             return;
 
+        }
 
 
 
 
 
 
+        const distance =
+            this.bot.entity.position
+            .distanceTo(
+                enemy.position
+            );
 
-        // uloženie nepriateľa do pamäte
+
+
+
+
 
         if(enemy.name){
 
@@ -146,55 +163,91 @@ export class CombatBrain {
 
 
 
+        const action =
+            this.decision.decide(
 
-        // creeper ochrana
+                enemy.name,
 
-        if(
-            enemy.name === "creeper"
-        ){
+                distance
+
+            );
 
 
-            const distance =
-                this.bot.entity.position
-                .distanceTo(
-                    enemy.position
+
+
+
+
+
+        switch(action){
+
+
+
+            case CombatAction.ATTACK:
+
+
+                this.attack(
+                    enemy
                 );
 
+                break;
 
 
-            if(distance < 5){
 
 
-                this.bot.setControlState(
-                    "back",
-                    true
+
+            case CombatAction.ESCAPE:
+
+
+                this.escape(
+                    enemy
                 );
 
-
-                setTimeout(()=>{
-
-                    this.bot.setControlState(
-                        "back",
-                        false
-                    );
-
-                },500);
+                break;
 
 
-                return;
 
-            }
+
+
+            case CombatAction.HEAL:
+
+
+                this.bot.chat(
+                    "Need healing"
+                );
+
+                break;
+
+
+
+
+
+            case CombatAction.RETREAT:
+
+
+                this.retreat();
+
+                break;
+
+
+
+            default:
+
+                break;
 
 
         }
 
 
 
+    }
 
 
 
 
-        // automatický útok
+
+
+
+    private attack(enemy:any){
 
 
         this.bot.lookAt(
@@ -202,10 +255,70 @@ export class CombatBrain {
         );
 
 
-
         this.bot.attack(
             enemy
         );
+
+
+    }
+
+
+
+
+
+
+
+    private escape(enemy:any){
+
+
+
+        this.bot.setControlState(
+            "back",
+            true
+        );
+
+
+
+        setTimeout(()=>{
+
+
+            this.bot.setControlState(
+                "back",
+                false
+            );
+
+
+        },700);
+
+
+
+    }
+
+
+
+
+
+
+
+    private retreat(){
+
+
+        this.bot.setControlState(
+            "back",
+            true
+        );
+
+
+        setTimeout(()=>{
+
+
+            this.bot.setControlState(
+                "back",
+                false
+            );
+
+
+        },500);
 
 
 
