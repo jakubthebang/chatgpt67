@@ -9,6 +9,7 @@ import { AIEngine } from "./AIEngine";
 import { EventManager } from "./EventManager";
 
 import { MovementManager } from "../modules/movement/MovementManager";
+import { JumpController } from "../modules/movement/JumpController";
 
 
 
@@ -26,6 +27,8 @@ export class BotManager {
     public commands!: CommandManager;
 
     public movement!: MovementManager;
+
+    public jump!: JumpController;
 
 
 
@@ -67,12 +70,9 @@ export class BotManager {
 
                 host: config.minecraft.host,
 
-
                 port: config.minecraft.port,
 
-
                 username: config.minecraft.username,
-
 
                 version: config.minecraft.version
 
@@ -93,6 +93,13 @@ export class BotManager {
 
         this.movement =
             new MovementManager(
+                this.bot
+            );
+
+
+
+        this.jump =
+            new JumpController(
                 this.bot
             );
 
