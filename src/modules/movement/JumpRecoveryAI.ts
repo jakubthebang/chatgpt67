@@ -10,13 +10,30 @@ export class JumpRecoveryAI {
     private recovering = false;
 
 
+    private attempts = 0;
+
+
+    private onFailed?: () => void;
+
+
+
     constructor(
-        bot: Bot
+
+        bot: Bot,
+
+        onFailed?: () => void
+
     ){
 
         this.bot = bot;
 
+        this.onFailed = onFailed;
+
     }
+
+
+
+
 
 
 
@@ -25,25 +42,73 @@ export class JumpRecoveryAI {
     async recover(){
 
 
+
         if(this.recovering)
             return;
+
 
 
         this.recovering = true;
 
 
+        this.attempts++;
+
+
+
+
 
         console.log(
-            "[AI] Jump failed. Recalculating..."
+            "[AI] Jump recovery started"
         );
 
 
 
-        // malý návrat od prekážky
+
+
+        // iba jeden opravný pokus
+
+        if(this.attempts > 1){
+
+
+
+            console.log(
+                "[AI] Jump impossible. Changing path..."
+            );
+
+
+
+            this.recovering = false;
+
+
+            this.attempts = 0;
+
+
+
+            if(this.onFailed){
+
+                this.onFailed();
+
+            }
+
+
+
+            return;
+
+        }
+
+
+
+
+
 
         this.bot.clearControlStates();
 
 
+
+
+
+
+        // cúvnutie
 
         this.bot.setControlState(
 
@@ -55,7 +120,8 @@ export class JumpRecoveryAI {
 
 
 
-        await this.wait(350);
+        await this.wait(400);
+
 
 
 
@@ -71,7 +137,18 @@ export class JumpRecoveryAI {
 
 
 
-        // druhý pokus skoku
+
+
+        await this.wait(200);
+
+
+
+
+
+
+
+        // nový pokus
+
 
 
         this.bot.setControlState(
@@ -88,6 +165,7 @@ export class JumpRecoveryAI {
 
 
 
+
         this.bot.setControlState(
 
             "jump",
@@ -98,7 +176,9 @@ export class JumpRecoveryAI {
 
 
 
-        await this.wait(200);
+
+        await this.wait(180);
+
 
 
 
@@ -113,14 +193,21 @@ export class JumpRecoveryAI {
 
 
 
+        this.bot.setControlState(
 
-        await this.wait(500);
+            "forward",
+
+            false
+
+        );
 
 
 
 
 
-        this.bot.clearControlStates();
+        await this.wait(800);
+
+
 
 
 
@@ -134,8 +221,30 @@ export class JumpRecoveryAI {
 
 
 
+
+
+
+
+    reset(){
+
+
+        this.attempts = 0;
+
+
+    }
+
+
+
+
+
+
+
+
+
     private wait(
+
         ms:number
+
     ){
 
         return new Promise(

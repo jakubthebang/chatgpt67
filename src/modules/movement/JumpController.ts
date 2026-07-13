@@ -1,6 +1,9 @@
 import { Bot } from "mineflayer";
 import { Vec3 } from "vec3";
 
+import { JumpRecoveryAI } from "./JumpRecoveryAI";
+
+
 
 export class JumpController {
 
@@ -17,17 +20,66 @@ export class JumpController {
     private enabled = false;
 
 
-    private retrying = false;
+    private recovering = false;
+
+
+    private jumpAI: JumpRecoveryAI;
+
+
+    private startPosition?: Vec3;
+
+
+    private onFailed?: () => void;
+
+
 
 
 
     constructor(
-        bot: Bot
+
+        bot: Bot,
+
+        onFailed?: () => void
+
     ){
+
 
         this.bot = bot;
 
+        this.onFailed = onFailed;
+
+
+
+
+        this.jumpAI =
+
+            new JumpRecoveryAI(
+
+                bot,
+
+                ()=>{
+
+
+                    console.log(
+                        "[AI] Jump failed, requesting new route"
+                    );
+
+
+
+                    if(this.onFailed){
+
+                        this.onFailed();
+
+                    }
+
+
+                }
+
+            );
+
+
     }
+
 
 
 
@@ -63,11 +115,13 @@ export class JumpController {
 
 
 
+
     enable(){
 
         this.enabled = true;
 
     }
+
 
 
 
@@ -94,6 +148,7 @@ export class JumpController {
 
 
 
+
     stop(){
 
 
@@ -101,7 +156,9 @@ export class JumpController {
 
 
             clearInterval(
+
                 this.interval
+
             );
 
 
@@ -124,42 +181,40 @@ export class JumpController {
     private checkJump(){
 
 
-        const bot = this.bot;
-
-
-
         if(!this.enabled)
             return;
 
 
-        if(!bot.entity)
+
+        if(!this.bot.entity)
             return;
+
 
 
         if(this.jumping)
             return;
 
 
-        if(this.retrying)
+
+        if(this.recovering)
             return;
 
 
-        if(!bot.entity.onGround)
+
+        if(!this.bot.entity.onGround)
             return;
-
-
 
 
 
 
 
         const pos =
-            bot.entity.position;
+            this.bot.entity.position;
 
 
 
         const yaw =
-            bot.entity.yaw;
+            this.bot.entity.yaw;
 
 
 
@@ -173,31 +228,44 @@ export class JumpController {
 
         const blockX =
             Math.floor(
-                pos.x - Math.sin(yaw) * distance
+
+                pos.x -
+
+                Math.sin(yaw) *
+
+                distance
+
             );
+
+
 
 
 
         const blockZ =
             Math.floor(
-                pos.z + Math.cos(yaw) * distance
+
+                pos.z +
+
+                Math.cos(yaw) *
+
+                distance
+
             );
+
+
 
 
 
         const blockY =
-            Math.floor(
-                pos.y
-            );
-
-
+            Math.floor(pos.y);
 
 
 
 
 
         const block =
-            bot.blockAt(
+
+            this.bot.blockAt(
 
                 new Vec3(
 
@@ -215,10 +283,9 @@ export class JumpController {
 
 
 
-
-
         const above =
-            bot.blockAt(
+
+            this.bot.blockAt(
 
                 new Vec3(
 
@@ -238,11 +305,8 @@ export class JumpController {
 
 
 
-
         if(!block || !above)
             return;
-
-
 
 
 
@@ -281,16 +345,23 @@ export class JumpController {
     private performJump(){
 
 
-        const bot = this.bot;
-
-
         this.jumping = true;
 
 
 
-        // malá príprava pred skokom
+        this.startPosition =
 
-        bot.clearControlStates();
+            this.bot.entity.position.clone();
+
+
+
+
+
+        this.bot.clearControlStates();
+
+
+
+
 
 
 
@@ -298,7 +369,7 @@ export class JumpController {
 
 
 
-            bot.setControlState(
+            this.bot.setControlState(
 
                 "forward",
 
@@ -308,7 +379,7 @@ export class JumpController {
 
 
 
-            bot.setControlState(
+            this.bot.setControlState(
 
                 "jump",
 
@@ -320,11 +391,12 @@ export class JumpController {
 
 
 
+
+
             setTimeout(()=>{
 
 
-
-                bot.setControlState(
+                this.bot.setControlState(
 
                     "jump",
 
@@ -333,8 +405,9 @@ export class JumpController {
                 );
 
 
-
             },150);
+
+
 
 
 
@@ -343,7 +416,7 @@ export class JumpController {
             setTimeout(()=>{
 
 
-                bot.setControlState(
+                this.bot.setControlState(
 
                     "forward",
 
@@ -357,7 +430,9 @@ export class JumpController {
 
 
 
-            },700);
+            },900);
+
+
 
 
 
@@ -365,7 +440,6 @@ export class JumpController {
 
 
 
-
     }
 
 
@@ -376,27 +450,59 @@ export class JumpController {
 
 
 
-    private checkJumpResult(){
+    private async checkJumpResult(){
 
 
 
-        const bot = this.bot;
+        if(!this.startPosition){
+
+
+            this.jumping = false;
+
+            return;
+
+
+        }
+
+
 
 
 
         const pos =
-            bot.entity.position;
+
+            this.bot.entity.position;
 
 
 
-        const blockAbove =
-            bot.blockAt(
 
-                pos.offset(
-                    0,
-                    1,
-                    0
-                )
+
+        const moved =
+
+            Math.abs(
+
+                pos.x -
+
+                this.startPosition.x
+
+            )
+
+            +
+
+            Math.abs(
+
+                pos.y -
+
+                this.startPosition.y
+
+            )
+
+            +
+
+            Math.abs(
+
+                pos.z -
+
+                this.startPosition.z
 
             );
 
@@ -406,115 +512,60 @@ export class JumpController {
 
 
 
-        // stále je pri prekážke
-        // pravdepodobne skok zlyhal
-
-        if(
-
-            blockAbove &&
-
-            blockAbove.boundingBox === "block"
-
-        ){
+        if(moved < 0.3){
 
 
-            this.retryJump();
+
+            console.log(
+
+                "[AI] Jump failed"
+
+            );
 
 
-        }
-        else{
 
 
             this.jumping = false;
 
 
+            this.recovering = true;
+
+
+
+
+
+            await this.jumpAI.recover();
+
+
+
+
+
+            this.jumpAI.reset();
+
+
+
+
+
+            this.recovering = false;
+
+
+
+            return;
+
+
         }
 
 
 
-    }
 
 
 
 
-
-
-
-
-
-    private retryJump(){
-
-
-
-        const bot = this.bot;
-
-
-
-        this.retrying = true;
-
-
-
-
-
-        // cúvnutie dozadu
-
-
-        bot.setControlState(
-
-            "back",
-
-            true
-
-        );
-
-
-
-
-
-        setTimeout(()=>{
-
-
-
-            bot.setControlState(
-
-                "back",
-
-                false
-
-            );
-
-
-
-
-
-            setTimeout(()=>{
-
-
-
-                this.jumping = false;
-
-                this.retrying = false;
-
-
-
-                this.performJump();
-
-
-
-            },300);
-
-
-
-
-
-        },400);
-
+        this.jumping = false;
 
 
 
     }
-
-
 
 
 

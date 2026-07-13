@@ -552,7 +552,7 @@ export class MovementManager {
 
 
 
-    private recalculatePath(){
+   public recalculatePath(){(){
 
 
 
