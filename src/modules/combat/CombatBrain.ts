@@ -5,6 +5,7 @@ import { CombatMemory } from "./CombatMemory";
 import { DefenseSystem } from "./DefenseSystem";
 
 
+
 export class CombatBrain {
 
 
@@ -85,7 +86,7 @@ export class CombatBrain {
     stop(){
 
 
-        this.running=false;
+        this.running = false;
 
 
         if(this.interval){
@@ -94,7 +95,7 @@ export class CombatBrain {
                 this.interval
             );
 
-            this.interval=undefined;
+            this.interval = undefined;
 
         }
 
@@ -127,9 +128,17 @@ export class CombatBrain {
 
 
 
-        this.memory.remember(
-            enemy.name
-        );
+
+
+        // uloženie nepriateľa do pamäte
+
+        if(enemy.name){
+
+            this.memory.remember(
+                enemy.name
+            );
+
+        }
 
 
 
@@ -137,7 +146,8 @@ export class CombatBrain {
 
 
 
-        // creeper priorita
+
+        // creeper ochrana
 
         if(
             enemy.name === "creeper"
@@ -161,6 +171,16 @@ export class CombatBrain {
                 );
 
 
+                setTimeout(()=>{
+
+                    this.bot.setControlState(
+                        "back",
+                        false
+                    );
+
+                },500);
+
+
                 return;
 
             }
@@ -174,7 +194,7 @@ export class CombatBrain {
 
 
 
-        // útok
+        // automatický útok
 
 
         this.bot.lookAt(

@@ -14,6 +14,8 @@ import { JumpController } from "../modules/movement/JumpController";
 import { AutoEat } from "../modules/inventory/AutoEat";
 import { AutoArmor } from "../modules/inventory/AutoArmor";
 
+import { CombatBrain } from "../modules/combat/CombatBrain";
+
 
 
 
@@ -36,9 +38,12 @@ export class BotManager {
 
     public jump!: JumpController;
 
+
     public autoEat!: AutoEat;
 
     public autoArmor!: AutoArmor;
+
+    public combatBrain!: CombatBrain;
 
 
 
@@ -144,6 +149,7 @@ export class BotManager {
 
 
 
+
         // AutoEat
 
         this.autoEat =
@@ -160,6 +166,7 @@ export class BotManager {
 
 
 
+
         // AutoArmor
 
         this.autoArmor =
@@ -169,6 +176,23 @@ export class BotManager {
 
 
         this.autoArmor.start();
+
+
+
+
+
+
+
+
+        // Combat AI
+
+        this.combatBrain =
+            new CombatBrain(
+                this.bot
+            );
+
+
+        this.combatBrain.start();
 
 
 
