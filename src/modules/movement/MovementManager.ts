@@ -40,7 +40,6 @@ export class MovementManager {
     private rotationTimer?: NodeJS.Timeout;
 
 
-
     private followTarget?: string;
 
 
@@ -65,6 +64,8 @@ export class MovementManager {
 
 
 
+
+
     constructor(
 
         bot: Bot,
@@ -77,7 +78,6 @@ export class MovementManager {
         this.bot = bot;
 
         this.jump = jump;
-
 
 
 
@@ -121,6 +121,7 @@ export class MovementManager {
 
 
 
+
         this.brain =
             new MovementBrain(
 
@@ -144,7 +145,6 @@ export class MovementManager {
             new RotationController(
                 bot
             );
-
 
 
     }
@@ -227,7 +227,9 @@ export class MovementManager {
 
 
 
+
         this.stop();
+
 
 
 
@@ -239,10 +241,7 @@ export class MovementManager {
 
 
 
-
         this.jump.enable();
-
-
 
 
 
@@ -310,8 +309,6 @@ export class MovementManager {
 
 
 
-
-
         this.bot.chat(
 
             `Following ${playerName}`
@@ -373,7 +370,6 @@ export class MovementManager {
         );
 
 
-
     }
 
 
@@ -387,8 +383,10 @@ export class MovementManager {
     private startStuckDetection(){
 
 
+
         if(this.stuckTimer)
             return;
+
 
 
 
@@ -401,6 +399,7 @@ export class MovementManager {
 
             if(!this.followTarget)
                 return;
+
 
 
 
@@ -458,16 +457,25 @@ export class MovementManager {
 
 
 
-            if(this.stuckCounter >= 3){
 
 
-                this.bot.pathfinder.setGoal(null);
+            // cca 2 sekundy bez pohybu
+
+            if(this.stuckCounter >= 2){
+
+
+
+                this.recoverFromStuck();
+
 
 
                 this.stuckCounter = 0;
 
 
+
             }
+
+
 
 
 
@@ -490,7 +498,180 @@ export class MovementManager {
 
 
 
+
         },1000);
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    private recoverFromStuck(){
+
+
+
+        this.bot.pathfinder.setGoal(null);
+
+
+
+        this.bot.clearControlStates();
+
+
+
+
+
+
+        // cúvnutie od prekážky
+
+        this.bot.setControlState(
+
+            "back",
+
+            true
+
+        );
+
+
+
+
+
+
+
+        setTimeout(()=>{
+
+
+            this.bot.setControlState(
+
+                "back",
+
+                false
+
+            );
+
+
+
+
+
+            // skúsi vyskočiť
+
+            this.bot.setControlState(
+
+                "jump",
+
+                true
+
+            );
+
+
+
+
+
+
+            setTimeout(()=>{
+
+
+                this.bot.setControlState(
+
+                    "jump",
+
+                    false
+
+                );
+
+
+
+
+
+                this.recalculatePath();
+
+
+
+            },250);
+
+
+
+
+
+        },500);
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    private recalculatePath(){
+
+
+
+        if(!this.followTarget)
+            return;
+
+
+
+
+
+        const player =
+            this.bot.players[this.followTarget];
+
+
+
+
+
+
+
+        if(
+
+            player &&
+
+            player.entity
+
+        ){
+
+
+
+            this.bot.pathfinder.setMovements(
+
+                this.createMovements()
+
+            );
+
+
+
+
+
+
+            this.bot.pathfinder.setGoal(
+
+                new GoalFollow(
+
+                    player.entity,
+
+                    1
+
+                ),
+
+                true
+
+            );
+
+
+        }
 
 
 
@@ -512,7 +693,9 @@ export class MovementManager {
 
 
             clearInterval(
+
                 this.stuckTimer
+
             );
 
 
@@ -526,12 +709,13 @@ export class MovementManager {
 
 
 
-
         if(this.rotationTimer){
 
 
             this.rotation.stop(
+
                 this.rotationTimer
+
             );
 
 
@@ -539,6 +723,7 @@ export class MovementManager {
 
 
         }
+
 
 
 
@@ -562,7 +747,9 @@ export class MovementManager {
 
 
 
+
         this.jump.disable();
+
 
 
 
