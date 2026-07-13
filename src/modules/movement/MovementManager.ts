@@ -1,5 +1,5 @@
 import { Bot } from "mineflayer";
-import { pathfinder, Movements, goals } from "mineflayer-pathfinder";
+import { Movements, goals } from "mineflayer-pathfinder";
 
 const { GoalFollow, GoalBlock } = goals;
 
@@ -9,20 +9,29 @@ export class MovementManager {
     private bot: Bot;
 
 
-    constructor(bot: Bot){
+    constructor(
+        bot: Bot
+    ){
 
         this.bot = bot;
 
     }
 
 
-    follow(playerName:string){
+
+    follow(
+        playerName: string
+    ){
 
         const player =
-        this.bot.players[playerName];
+            this.bot.players[playerName];
 
 
-        if(!player || !player.entity){
+
+        if(
+            !player ||
+            !player.entity
+        ){
 
             this.bot.chat(
                 `Player ${playerName} not found`
@@ -33,21 +42,18 @@ export class MovementManager {
         }
 
 
-        const mcData =
-        require("minecraft-data")
-        (this.bot.version);
-
 
         const movements =
-        new Movements(
-            this.bot,
-            mcData
-        );
+            new Movements(
+                this.bot
+            );
+
 
 
         this.bot.pathfinder.setMovements(
             movements
         );
+
 
 
         this.bot.pathfinder.setGoal(
@@ -58,6 +64,7 @@ export class MovementManager {
         );
 
 
+
         this.bot.chat(
             `Following ${playerName}`
         );
@@ -66,27 +73,27 @@ export class MovementManager {
 
 
 
+
+
     goto(
-        x:number,
-        y:number,
-        z:number
+        x: number,
+        y: number,
+        z: number
     ){
 
-        const mcData =
-        require("minecraft-data")
-        (this.bot.version);
 
 
         const movements =
-        new Movements(
-            this.bot,
-            mcData
-        );
+            new Movements(
+                this.bot
+            );
+
 
 
         this.bot.pathfinder.setMovements(
             movements
         );
+
 
 
         this.bot.pathfinder.setGoal(
@@ -98,6 +105,7 @@ export class MovementManager {
         );
 
 
+
         this.bot.chat(
             `Going to ${x} ${y} ${z}`
         );
@@ -106,14 +114,20 @@ export class MovementManager {
 
 
 
+
+
     stop(){
 
+
         this.bot.pathfinder.stop();
+
 
         this.bot.chat(
             "Movement stopped"
         );
 
+
     }
+
 
 }
