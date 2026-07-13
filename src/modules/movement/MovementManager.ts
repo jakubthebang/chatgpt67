@@ -14,9 +14,23 @@ export class MovementManager {
 
     private bot: Bot;
 
-    private followInterval?: NodeJS.Timeout;
 
-    private currentTarget?: string;
+    private followTarget?: string;
+
+
+    private followTimer?: NodeJS.Timeout;
+
+
+    private lastPosition = {
+        x: 0,
+        y: 0,
+        z: 0
+    };
+
+
+    private stuckTimer?: NodeJS.Timeout;
+
+
 
 
 
@@ -32,7 +46,10 @@ export class MovementManager {
 
 
 
-    private setupMovements(){
+
+
+
+    private createMovements(){
 
 
         const movements =
@@ -40,8 +57,6 @@ export class MovementManager {
                 this.bot
             );
 
-
-        // pohybové pravidlá
 
         movements.canDig = false;
 
@@ -57,6 +72,8 @@ export class MovementManager {
         return movements;
 
     }
+
+
 
 
 
@@ -89,42 +106,55 @@ export class MovementManager {
 
 
 
+
+
         this.stop();
 
 
 
-        this.currentTarget =
+
+        this.followTarget =
             playerName;
 
 
 
+
         this.bot.pathfinder.setMovements(
-            this.setupMovements()
+            this.createMovements()
         );
+
+
 
 
 
         this.bot.pathfinder.setGoal(
+
             new GoalFollow(
+
                 player.entity,
+
                 3
+
             ),
+
             true
+
         );
 
 
 
-        this.followInterval =
+
+        this.startStuckDetection();
+
+
+
+
+        this.followTimer =
             setInterval(()=>{
 
 
-                if(!this.currentTarget)
-                    return;
-
-
-
                 const target =
-                    this.bot.players[this.currentTarget];
+                    this.bot.players[this.followTarget!];
 
 
 
@@ -137,15 +167,24 @@ export class MovementManager {
 
 
                 this.bot.pathfinder.setGoal(
+
                     new GoalFollow(
+
                         target.entity,
+
                         3
+
                     ),
+
                     true
+
                 );
 
 
-            },500);
+
+            },1000);
+
+
 
 
 
@@ -175,19 +214,33 @@ export class MovementManager {
 
 
 
+
         this.bot.pathfinder.setMovements(
-            this.setupMovements()
+            this.createMovements()
         );
+
 
 
 
         this.bot.pathfinder.setGoal(
+
             new GoalBlock(
+
                 x,
+
                 y,
+
                 z
+
             )
+
         );
+
+
+
+
+        this.startStuckDetection();
+
 
 
 
@@ -205,23 +258,123 @@ export class MovementManager {
 
 
 
+
+    private startStuckDetection(){
+
+
+        this.stuckTimer =
+            setInterval(()=>{
+
+
+                const pos =
+                    this.bot.entity.position;
+
+
+
+                const moved =
+                    Math.abs(pos.x - this.lastPosition.x) +
+                    Math.abs(pos.y - this.lastPosition.y) +
+                    Math.abs(pos.z - this.lastPosition.z);
+
+
+
+                if(moved < 0.2){
+
+
+                    this.bot.pathfinder.stop();
+
+
+
+                    if(this.followTarget){
+
+
+                        const player =
+                            this.bot.players[this.followTarget];
+
+
+
+                        if(
+                            player &&
+                            player.entity
+                        ){
+
+                            this.bot.pathfinder.setGoal(
+
+                                new GoalFollow(
+
+                                    player.entity,
+
+                                    3
+
+                                ),
+
+                                true
+
+                            );
+
+                        }
+
+
+                    }
+
+
+                }
+
+
+
+                this.lastPosition = {
+
+                    x: pos.x,
+
+                    y: pos.y,
+
+                    z: pos.z
+
+                };
+
+
+
+            },3000);
+
+
+    }
+
+
+
+
+
+
+
+
+
     stop(){
 
 
-        if(this.followInterval){
+        if(this.followTimer){
 
             clearInterval(
-                this.followInterval
+                this.followTimer
             );
 
-            this.followInterval = undefined;
+            this.followTimer = undefined;
 
         }
 
 
 
-        this.currentTarget =
-            undefined;
+        if(this.stuckTimer){
+
+            clearInterval(
+                this.stuckTimer
+            );
+
+            this.stuckTimer = undefined;
+
+        }
+
+
+
+        this.followTarget = undefined;
 
 
 

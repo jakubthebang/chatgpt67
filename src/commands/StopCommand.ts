@@ -1,6 +1,8 @@
 import { Bot } from "mineflayer";
 import { Command } from "./Command";
 import { TaskManager } from "../core/TaskManager";
+import { MovementManager } from "../modules/movement/MovementManager";
+
 
 
 export class StopCommand implements Command {
@@ -10,28 +12,49 @@ export class StopCommand implements Command {
 
 
     description =
-        "Stops all tasks";
+        "Stops all tasks and movement";
+
+
 
 
 
     constructor(
-        private tasks: TaskManager
+
+        private tasks: TaskManager,
+
+        private movement: MovementManager
+
     ){}
 
 
 
+
+
     execute(
+
         bot: Bot,
+
         args: string[],
+
         username: string
+
     ){
 
+
+        // zastaví AI úlohy
 
         this.tasks.cancelAll();
 
 
+
+        // zastaví follow/goto/pathfinder
+
+        this.movement.stop();
+
+
+
         bot.chat(
-            "All tasks stopped."
+            "All tasks and movement stopped."
         );
 
 

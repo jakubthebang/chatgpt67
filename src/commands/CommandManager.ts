@@ -14,23 +14,25 @@ import { FollowCommand } from "./FollowCommand";
 import { MovementManager } from "../modules/movement/MovementManager";
 
 
+
 export class CommandManager {
 
 
-    private commands: Map<string, Command> = new Map();
-
-
-    private movement: MovementManager;
+    private commands: Map<string, Command> =
+        new Map();
 
 
 
     constructor(
+
         private ai: AIEngine,
+
         private tasks: TaskManager,
-        movement: MovementManager
+
+        private movement: MovementManager
+
     ){
 
-        this.movement = movement;
 
 
         this.register(
@@ -38,16 +40,20 @@ export class CommandManager {
         );
 
 
+
         this.register(
             new StatusCommand()
         );
 
 
+
         this.register(
             new StopCommand(
-                this.tasks
+                this.tasks,
+                this.movement
             )
         );
+
 
 
         this.register(
@@ -55,6 +61,7 @@ export class CommandManager {
                 this.movement
             )
         );
+
 
 
         this.register(
@@ -65,6 +72,8 @@ export class CommandManager {
 
 
     }
+
+
 
 
 
@@ -87,14 +96,22 @@ export class CommandManager {
 
 
 
+
+
     handle(
+
         bot: Bot,
+
         username: string,
+
         message: string
+
     ){
 
 
-        if(!message.startsWith("."))
+        if(
+            !message.startsWith(".")
+        )
             return;
 
 
@@ -133,9 +150,13 @@ export class CommandManager {
 
 
         command.execute(
+
             bot,
+
             args,
+
             username
+
         );
 
 
