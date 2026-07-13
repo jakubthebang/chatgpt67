@@ -12,10 +12,14 @@ import { MovementManager } from "../modules/movement/MovementManager";
 import { JumpController } from "../modules/movement/JumpController";
 
 
+
+
+
 export class BotManager {
 
 
     public bot!: Bot;
+
 
     public tasks: TaskManager;
 
@@ -31,11 +35,14 @@ export class BotManager {
 
 
 
-    constructor() {
+
+
+    constructor(){
 
 
         this.tasks =
             new TaskManager();
+
 
 
         this.ai =
@@ -44,8 +51,10 @@ export class BotManager {
             );
 
 
+
         this.events =
             new EventManager();
+
 
     }
 
@@ -53,11 +62,16 @@ export class BotManager {
 
 
 
-    async start() {
+
+
+
+
+    async start(){
 
 
         this.bot =
             mineflayer.createBot({
+
 
 
                 host: config.minecraft.host,
@@ -69,7 +83,10 @@ export class BotManager {
                 version: config.minecraft.version
 
 
+
             });
+
+
 
 
 
@@ -83,10 +100,18 @@ export class BotManager {
 
 
 
+
+
+
+
         this.movement =
             new MovementManager(
                 this.bot
             );
+
+
+
+
 
 
 
@@ -97,19 +122,29 @@ export class BotManager {
 
 
 
+        // jump systém beží,
+        // ale aktivuje sa až pri follow
+        this.jump.start();
+
+
+
+
+
+
+
 
 
         this.commands =
             new CommandManager(
 
 
-                this.ai,
 
+                this.ai,
 
                 this.tasks,
 
-
                 this.movement
+
 
 
             );
@@ -120,18 +155,18 @@ export class BotManager {
 
 
 
+
+
+
+
         this.bot.once(
             "spawn",
-            () => {
+            ()=>{
 
 
                 console.log(
                     "AI Bot connected!"
                 );
-
-
-                // Vanilla Auto Jump
-                this.jump.start();
 
 
 
@@ -159,6 +194,7 @@ export class BotManager {
             )=>{
 
 
+
                 if(
                     username === this.bot.username
                 )
@@ -167,7 +203,9 @@ export class BotManager {
 
 
 
+
                 this.commands.handle(
+
 
                     this.bot,
 
@@ -175,7 +213,9 @@ export class BotManager {
 
                     message
 
+
                 );
+
 
 
             }
@@ -194,9 +234,12 @@ export class BotManager {
             ()=>{
 
 
+
                 console.log(
                     "Disconnected. Reconnecting..."
                 );
+
+
 
 
 
@@ -206,7 +249,9 @@ export class BotManager {
                     this.start();
 
 
+
                 },5000);
+
 
 
             }
@@ -214,7 +259,11 @@ export class BotManager {
 
 
 
+
     }
+
+
+
 
 
 }
