@@ -8,6 +8,10 @@ import { Command } from "./Command";
 import { HelpCommand } from "./HelpCommand";
 import { StatusCommand } from "./StatusCommand";
 import { StopCommand } from "./StopCommand";
+import { GotoCommand } from "./GotoCommand";
+import { FollowCommand } from "./FollowCommand";
+
+import { MovementManager } from "../modules/movement/MovementManager";
 
 
 export class CommandManager {
@@ -16,11 +20,17 @@ export class CommandManager {
     private commands: Map<string, Command> = new Map();
 
 
+    private movement: MovementManager;
+
+
 
     constructor(
         private ai: AIEngine,
-        private tasks: TaskManager
+        private tasks: TaskManager,
+        movement: MovementManager
     ){
+
+        this.movement = movement;
 
 
         this.register(
@@ -40,7 +50,23 @@ export class CommandManager {
         );
 
 
+        this.register(
+            new GotoCommand(
+                this.movement
+            )
+        );
+
+
+        this.register(
+            new FollowCommand(
+                this.movement
+            )
+        );
+
+
     }
+
+
 
 
 
