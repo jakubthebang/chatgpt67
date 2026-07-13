@@ -5,6 +5,7 @@ import { CombatMemory } from "./CombatMemory";
 import { DefenseSystem } from "./DefenseSystem";
 import { CombatDecision, CombatAction } from "./CombatDecision";
 import { CombatHeal } from "./CombatHeal";
+import { WeaponManager } from "./WeaponManager";
 
 
 
@@ -20,6 +21,8 @@ export class CombatBrain {
     private decision: CombatDecision;
 
     private healer: CombatHeal;
+
+    private weapon: WeaponManager;
 
 
     private running = false;
@@ -57,6 +60,11 @@ export class CombatBrain {
 
         this.healer =
             new CombatHeal(bot);
+
+
+
+        this.weapon =
+            new WeaponManager(bot);
 
 
     }
@@ -135,7 +143,7 @@ export class CombatBrain {
 
 
 
-    private think(){
+    private async think(){
 
 
 
@@ -209,7 +217,7 @@ export class CombatBrain {
             case CombatAction.ATTACK:
 
 
-                this.attack(
+                await this.attack(
                     enemy
                 );
 
@@ -285,9 +293,13 @@ export class CombatBrain {
 
 
 
-    private attack(
+    private async attack(
         enemy:any
     ){
+
+
+        await this.weapon.equipBestWeapon();
+
 
 
         this.bot.lookAt(
