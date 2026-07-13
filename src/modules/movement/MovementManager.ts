@@ -1,6 +1,5 @@
 import { Bot } from "mineflayer";
 import { Movements, goals } from "mineflayer-pathfinder";
-import minecraftData from "minecraft-data";
 
 
 const { GoalFollow, GoalBlock } = goals;
@@ -33,16 +32,9 @@ export class MovementManager {
     private createMovements(){
 
 
-        const mcData =
-            minecraftData(
-                this.bot.version
-            );
-
-
         const movements =
             new Movements(
-                this.bot,
-                mcData
+                this.bot
             );
 
 
@@ -123,8 +115,14 @@ export class MovementManager {
             setInterval(()=>{
 
 
+                if(!this.followingPlayer)
+                    return;
+
+
+
                 const target =
-                    this.bot.players[this.followingPlayer!];
+                    this.bot.players[this.followingPlayer];
+
 
 
                 if(
@@ -217,12 +215,6 @@ export class MovementManager {
 
 
         this.followingPlayer = undefined;
-
-
-
-        this.bot.pathfinder.setGoal(
-            null
-        );
 
 
 
