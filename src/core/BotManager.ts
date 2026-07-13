@@ -10,7 +10,9 @@ import { EventManager } from "./EventManager";
 
 import { MovementManager } from "../modules/movement/MovementManager";
 import { JumpController } from "../modules/movement/JumpController";
+
 import { AutoEat } from "../modules/inventory/AutoEat";
+import { AutoArmor } from "../modules/inventory/AutoArmor";
 
 
 
@@ -35,6 +37,8 @@ export class BotManager {
     public jump!: JumpController;
 
     public autoEat!: AutoEat;
+
+    public autoArmor!: AutoArmor;
 
 
 
@@ -149,6 +153,22 @@ export class BotManager {
 
 
         this.autoEat.start();
+
+
+
+
+
+
+
+        // AutoArmor
+
+        this.autoArmor =
+            new AutoArmor(
+                this.bot
+            );
+
+
+        this.autoArmor.start();
 
 
 
