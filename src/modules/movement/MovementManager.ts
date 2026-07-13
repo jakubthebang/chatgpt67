@@ -1,5 +1,6 @@
 import { Bot } from "mineflayer";
 import { Movements, goals } from "mineflayer-pathfinder";
+import { JumpController } from "./JumpController";
 
 
 const {
@@ -14,6 +15,8 @@ export class MovementManager {
 
     private bot: Bot;
 
+    private jump: JumpController;
+
     private followTarget?: string;
 
     private stuckTimer?: NodeJS.Timeout;
@@ -26,16 +29,24 @@ export class MovementManager {
     };
 
 
+    private stuckCounter = 0;
+
+
 
 
 
     constructor(
-        bot: Bot
+        bot: Bot,
+        jump: JumpController
     ){
 
         this.bot = bot;
 
+        this.jump = jump;
+
     }
+
+
 
 
 
@@ -55,13 +66,19 @@ export class MovementManager {
 
         movements.canDig = false;
 
+
         movements.allowSprinting = true;
 
-        movements.allowParkour = true;
+
+        // vypnuté, aby sa nelepil na steny
+        movements.allowParkour = false;
+
 
         movements.allow1by1towers = false;
 
+
         movements.canOpenDoors = true;
+
 
         movements.maxDropDown = 3;
 
@@ -106,6 +123,7 @@ export class MovementManager {
 
 
 
+
         this.stop();
 
 
@@ -116,10 +134,16 @@ export class MovementManager {
 
 
 
+        this.jump.enable();
+
+
+
 
 
         this.bot.pathfinder.setMovements(
+
             this.createMovements()
+
         );
 
 
@@ -146,10 +170,15 @@ export class MovementManager {
 
 
 
+        this.startStuckDetection();
+
+
+
 
         this.bot.chat(
             `Following ${playerName}`
         );
+
 
 
     }
@@ -173,11 +202,11 @@ export class MovementManager {
 
 
 
-
         this.bot.pathfinder.setMovements(
-            this.createMovements()
-        );
 
+            this.createMovements()
+
+        );
 
 
 
@@ -196,12 +225,203 @@ export class MovementManager {
         );
 
 
+    }
 
 
 
-        this.bot.chat(
-            `Going to ${x} ${y} ${z}`
-        );
+
+
+
+
+
+
+    private startStuckDetection(){
+
+
+        if(this.stuckTimer)
+            return;
+
+
+
+        this.stuckTimer = setInterval(()=>{
+
+
+
+            if(!this.followTarget)
+                return;
+
+
+
+            const pos =
+                this.bot.entity.position;
+
+
+
+
+
+            const moved =
+
+                Math.abs(
+                    pos.x - this.lastPosition.x
+                )
+
+                +
+
+                Math.abs(
+                    pos.y - this.lastPosition.y
+                )
+
+                +
+
+                Math.abs(
+                    pos.z - this.lastPosition.z
+                );
+
+
+
+
+
+
+            if(moved < 0.15){
+
+
+                this.stuckCounter++;
+
+
+            }else{
+
+
+                this.stuckCounter = 0;
+
+
+            }
+
+
+
+
+
+
+            if(this.stuckCounter >= 3){
+
+
+                this.recalculatePath();
+
+
+                this.stuckCounter = 0;
+
+
+            }
+
+
+
+
+
+
+            this.lastPosition = {
+
+
+                x: pos.x,
+
+                y: pos.y,
+
+                z: pos.z
+
+
+            };
+
+
+
+
+
+        },1000);
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    private recalculatePath(){
+
+
+
+        if(!this.followTarget)
+            return;
+
+
+
+
+
+        const player =
+
+            this.bot.players[this.followTarget];
+
+
+
+
+
+        if(
+
+            player &&
+
+            player.entity
+
+        ){
+
+
+
+            this.bot.pathfinder.setGoal(
+                null
+            );
+
+
+
+
+
+            setTimeout(()=>{
+
+
+
+                this.bot.pathfinder.setMovements(
+
+                    this.createMovements()
+
+                );
+
+
+
+
+
+                this.bot.pathfinder.setGoal(
+
+
+                    new GoalFollow(
+
+                        player.entity,
+
+                        1
+
+                    ),
+
+
+                    true
+
+
+                );
+
+
+
+            },200);
+
+
+
+        }
 
 
     }
@@ -222,7 +442,9 @@ export class MovementManager {
 
 
             clearInterval(
+
                 this.stuckTimer
+
             );
 
 
@@ -240,9 +462,27 @@ export class MovementManager {
 
 
 
+        this.stuckCounter = 0;
+
+
+
+
+
+        if(this.jump){
+
+            this.jump.disable();
+
+        }
+
+
+
+
+
 
         this.bot.pathfinder.setGoal(
+
             null
+
         );
 
 
@@ -260,7 +500,6 @@ export class MovementManager {
 
 
     }
-
 
 
 

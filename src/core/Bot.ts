@@ -73,7 +73,6 @@ export class BotManager {
             mineflayer.createBot({
 
 
-
                 host: config.minecraft.host,
 
                 port: config.minecraft.port,
@@ -83,9 +82,7 @@ export class BotManager {
                 version: config.minecraft.version
 
 
-
             });
-
 
 
 
@@ -103,17 +100,7 @@ export class BotManager {
 
 
 
-
-        this.movement =
-            new MovementManager(
-                this.bot
-            );
-
-
-
-
-
-
+        // vytvor jump controller prvý
 
         this.jump =
             new JumpController(
@@ -121,10 +108,24 @@ export class BotManager {
             );
 
 
-
-        // jump systém beží,
-        // ale aktivuje sa až pri follow
         this.jump.start();
+
+
+
+
+
+
+
+        // movement dostane jump controller
+
+        this.movement =
+            new MovementManager(
+
+                this.bot,
+
+                this.jump
+
+            );
 
 
 
@@ -138,13 +139,13 @@ export class BotManager {
             new CommandManager(
 
 
-
                 this.ai,
+
 
                 this.tasks,
 
-                this.movement
 
+                this.movement
 
 
             );
@@ -194,7 +195,6 @@ export class BotManager {
             )=>{
 
 
-
                 if(
                     username === this.bot.username
                 )
@@ -206,16 +206,13 @@ export class BotManager {
 
                 this.commands.handle(
 
-
                     this.bot,
 
                     username,
 
                     message
 
-
                 );
-
 
 
             }
@@ -234,12 +231,9 @@ export class BotManager {
             ()=>{
 
 
-
                 console.log(
                     "Disconnected. Reconnecting..."
                 );
-
-
 
 
 
@@ -247,7 +241,6 @@ export class BotManager {
 
 
                     this.start();
-
 
 
                 },5000);
@@ -259,11 +252,7 @@ export class BotManager {
 
 
 
-
     }
-
-
-
 
 
 }
