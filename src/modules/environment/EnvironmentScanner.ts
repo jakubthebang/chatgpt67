@@ -1,5 +1,5 @@
 import { Bot } from "mineflayer";
-import Vec3 from "vec3";
+import { Vec3 } from "vec3";
 
 
 export class EnvironmentScanner {
@@ -15,6 +15,7 @@ export class EnvironmentScanner {
         this.bot = bot;
 
     }
+
 
 
 
@@ -67,7 +68,7 @@ export class EnvironmentScanner {
 
 
     private checkBlock(
-        pos:Vec3
+        pos: Vec3
     ){
 
 
@@ -79,8 +80,11 @@ export class EnvironmentScanner {
         if(!block){
 
             return {
+
                 solid:false,
+
                 name:"air"
+
             };
 
         }
@@ -88,18 +92,23 @@ export class EnvironmentScanner {
 
 
 
+
         return {
+
 
             solid:
                 block.boundingBox !== "empty",
 
+
             name:
                 block.name
+
 
         };
 
 
     }
+
 
 
 

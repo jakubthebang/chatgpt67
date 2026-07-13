@@ -1,11 +1,12 @@
 import { Bot } from "mineflayer";
-import Vec3 from "vec3";
+import { Vec3 } from "vec3";
 
 
-export class EnvironmentScanner {
+export class EnvironmentManager {
 
 
     private bot: Bot;
+
 
 
     constructor(
@@ -20,58 +21,9 @@ export class EnvironmentScanner {
 
 
 
-    scan(){
 
-        const pos =
-            this.bot.entity.position;
-
-
-
-        const results = {
-
-
-            front: this.checkBlock(
-                pos.offset(0,0,1)
-            ),
-
-
-            back: this.checkBlock(
-                pos.offset(0,0,-1)
-            ),
-
-
-            left: this.checkBlock(
-                pos.offset(-1,0,0)
-            ),
-
-
-            right: this.checkBlock(
-                pos.offset(1,0,0)
-            ),
-
-
-            below: this.checkBlock(
-                pos.offset(0,-1,0)
-            )
-
-
-        };
-
-
-
-        return results;
-
-    }
-
-
-
-
-
-
-
-
-    private checkBlock(
-        pos:Vec3
+    scanBlock(
+        pos: Vec3
     ){
 
 
@@ -80,11 +32,17 @@ export class EnvironmentScanner {
 
 
 
-        if(!block)
+        if(!block){
+
             return {
+
                 solid:false,
+
                 name:"air"
+
             };
+
+        }
 
 
 
@@ -100,7 +58,6 @@ export class EnvironmentScanner {
                 block.name
 
 
-
         };
 
 
@@ -111,36 +68,48 @@ export class EnvironmentScanner {
 
 
 
+    getNearbyBlocks(){
 
 
-    hasWallAhead(){
-
-
-        const scan =
-            this.scan();
-
-
-
-        return scan.front.solid;
-
-
-    }
+        const pos =
+            this.bot.entity.position;
 
 
 
+        return {
 
 
+            front:
+                this.scanBlock(
+                    pos.offset(0,0,1)
+                ),
 
 
-    isHoleBelow(){
+            back:
+                this.scanBlock(
+                    pos.offset(0,0,-1)
+                ),
 
 
-        const scan =
-            this.scan();
+            left:
+                this.scanBlock(
+                    pos.offset(-1,0,0)
+                ),
 
 
+            right:
+                this.scanBlock(
+                    pos.offset(1,0,0)
+                ),
 
-        return !scan.below.solid;
+
+            below:
+                this.scanBlock(
+                    pos.offset(0,-1,0)
+                )
+
+
+        };
 
 
     }
