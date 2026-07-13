@@ -5,9 +5,13 @@ import { MovementManager } from "../modules/movement/MovementManager";
 
 export class GotoCommand implements Command {
 
+
     name = "goto";
 
-    description = "Go to coordinates";
+
+    description =
+        "Go to coordinates";
+
 
 
     constructor(
@@ -15,25 +19,32 @@ export class GotoCommand implements Command {
     ){}
 
 
+
     execute(
         bot: Bot,
-        args: string[]
+        args: string[],
+        username: string
     ){
 
+
         if(args.length < 3){
+
 
             bot.chat(
                 "Usage: .goto <x> <y> <z>"
             );
+
 
             return;
 
         }
 
 
+
         const x = Number(args[0]);
         const y = Number(args[1]);
         const z = Number(args[2]);
+
 
 
         if(
@@ -42,13 +53,16 @@ export class GotoCommand implements Command {
             isNaN(z)
         ){
 
+
             bot.chat(
                 "Invalid coordinates"
             );
 
+
             return;
 
         }
+
 
 
         this.movement.goto(
@@ -57,6 +71,8 @@ export class GotoCommand implements Command {
             z
         );
 
+
     }
+
 
 }
