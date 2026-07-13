@@ -20,7 +20,7 @@ export class TaskManager {
     }
 
 
-    get(id:string): Task | undefined {
+    get(id: string): Task | undefined {
 
         return this.tasks.find(
             task => task.id === id
@@ -29,7 +29,21 @@ export class TaskManager {
     }
 
 
-    remove(id:string) {
+    update(
+        id: string,
+        status: Task["status"]
+    ) {
+
+        const task = this.get(id);
+
+        if(task) {
+            task.status = status;
+        }
+
+    }
+
+
+    remove(id: string) {
 
         this.tasks =
             this.tasks.filter(
@@ -42,6 +56,13 @@ export class TaskManager {
     clear() {
 
         this.tasks = [];
+
+    }
+
+
+    count() {
+
+        return this.tasks.length;
 
     }
 
