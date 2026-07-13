@@ -10,7 +10,7 @@ import { EventManager } from "./EventManager";
 
 import { MovementManager } from "../modules/movement/MovementManager";
 import { JumpController } from "../modules/movement/JumpController";
-
+import { AutoEat } from "../modules/inventory/AutoEat";
 
 
 
@@ -34,7 +34,7 @@ export class BotManager {
 
     public jump!: JumpController;
 
-
+    public autoEat!: AutoEat;
 
 
 
@@ -43,10 +43,8 @@ export class BotManager {
     constructor(){
 
 
-
         this.tasks =
             new TaskManager();
-
 
 
 
@@ -57,10 +55,8 @@ export class BotManager {
 
 
 
-
         this.events =
             new EventManager();
-
 
 
     }
@@ -76,10 +72,8 @@ export class BotManager {
     async start(){
 
 
-
         this.bot =
             mineflayer.createBot({
-
 
 
                 host: config.minecraft.host,
@@ -91,7 +85,6 @@ export class BotManager {
                 version: config.minecraft.version
 
 
-
             });
 
 
@@ -99,13 +92,8 @@ export class BotManager {
 
 
 
-
-
-
         this.bot.loadPlugin(
-
             pathfinder
-
         );
 
 
@@ -116,17 +104,15 @@ export class BotManager {
 
 
 
-        // vytvor jump controller
+        // vytvor jump controller prvý
 
         this.jump =
-
             new JumpController(
-
                 this.bot
-
             );
 
 
+        this.jump.start();
 
 
 
@@ -136,10 +122,9 @@ export class BotManager {
 
 
 
-        // vytvor movement system
+        // movement dostane jump controller
 
         this.movement =
-
             new MovementManager(
 
                 this.bot,
@@ -154,39 +139,15 @@ export class BotManager {
 
 
 
+        // AutoEat modul
 
-        // prepojenie jump AI s movement AI
-
-        this.jump.setFailureCallback(
-
-            ()=>{
-
-
-                console.log(
-
-                    "[AI] Jump failed. Recalculating path..."
-
-                );
+        this.autoEat =
+            new AutoEat(
+                this.bot
+            );
 
 
-
-                this.movement.recalculatePath();
-
-
-
-            }
-
-        );
-
-
-
-
-
-
-
-        // spustenie jump systému
-
-        this.jump.start();
+        this.autoEat.start();
 
 
 
@@ -197,7 +158,6 @@ export class BotManager {
 
 
         this.commands =
-
             new CommandManager(
 
 
@@ -220,33 +180,26 @@ export class BotManager {
 
 
 
+
+
+
         this.bot.once(
-
             "spawn",
-
             ()=>{
 
 
-
                 console.log(
-
                     "AI Bot connected!"
-
                 );
-
 
 
 
                 this.bot.chat(
-
                     "AI Assistant online. Type .help"
-
                 );
 
 
-
             }
-
         );
 
 
@@ -258,27 +211,17 @@ export class BotManager {
 
 
         this.bot.on(
-
             "chat",
-
             (
-
                 username,
-
                 message
-
             )=>{
 
 
-
                 if(
-
                     username === this.bot.username
-
                 )
-
                     return;
-
 
 
 
@@ -295,9 +238,7 @@ export class BotManager {
                 );
 
 
-
             }
-
         );
 
 
@@ -309,19 +250,13 @@ export class BotManager {
 
 
         this.bot.on(
-
             "end",
-
             ()=>{
 
 
-
                 console.log(
-
                     "Disconnected. Reconnecting..."
-
                 );
-
 
 
 
@@ -331,21 +266,16 @@ export class BotManager {
                     this.start();
 
 
-
                 },5000);
 
 
 
             }
-
         );
 
 
 
-
-
     }
-
 
 
 }
