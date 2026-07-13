@@ -9,6 +9,7 @@ import { ObstacleHandler } from "./ObstacleHandler";
 import { MovementBrain } from "./MovementBrain";
 
 
+
 const {
     GoalFollow,
     GoalBlock
@@ -57,7 +58,6 @@ export class MovementManager {
 
 
     private stuckCounter = 0;
-
 
 
 
@@ -115,7 +115,6 @@ export class MovementManager {
                 this.scanner
 
             );
-
 
 
 
@@ -289,12 +288,25 @@ export class MovementManager {
 
 
 
+
         this.brain.start();
+
+
+        this.brain.startFollow(
+
+            playerName
+
+        );
+
+
+
 
 
 
 
         this.startStuckDetection();
+
+
 
 
 

@@ -4,6 +4,7 @@ import { EnvironmentScanner } from "../environment/EnvironmentScanner";
 import { PathDecisionSystem } from "./PathDecisionSystem";
 import { ObstacleHandler } from "./ObstacleHandler";
 import { ThoughtLogger } from "../ai/ThoughtLogger";
+import { FollowController } from "./FollowController";
 
 
 
@@ -21,6 +22,8 @@ export class MovementBrain {
 
 
     private thoughts: ThoughtLogger;
+
+    private follow: FollowController;
 
 
 
@@ -60,9 +63,22 @@ export class MovementBrain {
 
 
 
+
         this.thoughts =
             new ThoughtLogger(
                 bot
+            );
+
+
+
+
+        this.follow =
+            new FollowController(
+
+                bot,
+
+                this.thoughts
+
             );
 
 
@@ -88,7 +104,15 @@ export class MovementBrain {
 
 
 
-        this.thinkingLoop();
+        this.timer =
+            setInterval(()=>{
+
+
+                this.think();
+
+
+
+            },200);
 
 
 
@@ -101,22 +125,13 @@ export class MovementBrain {
 
 
 
+    startFollow(
+        playerName:string
+    ){
 
-    private thinkingLoop(){
-
-
-
-        this.timer =
-            setInterval(()=>{
-
-
-                this.think();
-
-
-
-            },200);
-
-
+        this.follow.start(
+            playerName
+        );
 
     }
 
@@ -145,11 +160,6 @@ export class MovementBrain {
 
 
 
-
-
-        /*
-            kontrola prekážky
-        */
 
 
         if(
@@ -183,11 +193,6 @@ export class MovementBrain {
 
 
 
-        /*
-            kontrola novej cesty
-        */
-
-
         if(
 
             this.decision.shouldRecalculate()
@@ -203,11 +208,10 @@ export class MovementBrain {
             );
 
 
-
             return;
 
-        }
 
+        }
 
 
 
@@ -259,6 +263,11 @@ export class MovementBrain {
 
 
         }
+
+
+
+
+        this.follow.stop();
 
 
 
