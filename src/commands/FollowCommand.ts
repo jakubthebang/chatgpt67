@@ -5,9 +5,13 @@ import { MovementManager } from "../modules/movement/MovementManager";
 
 export class FollowCommand implements Command {
 
+
     name = "follow";
 
-    description = "Follow a player";
+
+    description =
+        "Follow a player";
+
 
 
     constructor(
@@ -15,29 +19,39 @@ export class FollowCommand implements Command {
     ){}
 
 
+
     execute(
         bot: Bot,
-        args: string[]
+        args: string[],
+        username: string
     ){
 
-        const player = args[0];
+
+        const player =
+            args[0];
+
 
 
         if(!player){
 
+
             bot.chat(
                 "Usage: .follow <player>"
             );
+
 
             return;
 
         }
 
 
+
         this.movement.follow(
             player
         );
 
+
     }
+
 
 }
