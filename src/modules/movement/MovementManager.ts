@@ -66,10 +66,6 @@ export class MovementManager {
 
 
 
-
-
-
-
     constructor(
 
         bot: Bot,
@@ -123,7 +119,6 @@ export class MovementManager {
 
 
 
-
         this.brain =
             new MovementBrain(
 
@@ -136,7 +131,6 @@ export class MovementManager {
                 this.obstacle
 
             );
-
 
 
 
@@ -176,8 +170,6 @@ export class MovementManager {
 
 
 
-
-
     private createMovements(){
 
 
@@ -190,18 +182,13 @@ export class MovementManager {
 
         movements.canDig = false;
 
-
         movements.allowSprinting = true;
-
 
         movements.allowParkour = true;
 
-
         movements.allow1by1towers = false;
 
-
         movements.canOpenDoors = true;
-
 
         movements.maxDropDown = 3;
 
@@ -210,7 +197,6 @@ export class MovementManager {
         return movements;
 
     }
-
 
 
 
@@ -267,6 +253,7 @@ export class MovementManager {
 
 
 
+
         this.rotationTimer =
             this.rotation.startFollowLook(
                 playerName
@@ -281,7 +268,6 @@ export class MovementManager {
             this.createMovements()
 
         );
-
 
 
 
@@ -306,7 +292,6 @@ export class MovementManager {
 
 
         this.brain.start();
-
 
         this.brain.startFollow(
 
@@ -340,7 +325,6 @@ export class MovementManager {
 
 
 
-
     goto(
 
         x:number,
@@ -352,8 +336,8 @@ export class MovementManager {
     ){
 
 
-
         this.stop();
+
 
 
 
@@ -363,6 +347,7 @@ export class MovementManager {
             this.createMovements()
 
         );
+
 
 
 
@@ -382,7 +367,6 @@ export class MovementManager {
         );
 
 
-
     }
 
 
@@ -392,9 +376,7 @@ export class MovementManager {
 
 
 
-
     private startStuckDetection(){
-
 
 
         if(this.stuckTimer)
@@ -408,7 +390,6 @@ export class MovementManager {
             setInterval(()=>{
 
 
-
             if(!this.followTarget)
                 return;
 
@@ -416,10 +397,9 @@ export class MovementManager {
 
 
 
-            // ignoruj skoky
-
             if(!this.bot.entity.onGround)
                 return;
+
 
 
 
@@ -480,9 +460,6 @@ export class MovementManager {
 
 
 
-
-            // 3x500ms = 1.5 sekundy
-
             if(this.stuckCounter >= 3){
 
 
@@ -494,14 +471,9 @@ export class MovementManager {
 
 
 
-
                 this.bot.clearControlStates();
 
-
-
                 this.bot.pathfinder.setGoal(null);
-
-
 
 
 
@@ -510,12 +482,10 @@ export class MovementManager {
 
 
 
-
                 this.stuckCounter = 0;
 
 
             }
-
 
 
 
@@ -538,8 +508,8 @@ export class MovementManager {
 
 
 
-        },500);
 
+        },500);
 
 
     }
@@ -551,9 +521,7 @@ export class MovementManager {
 
 
 
-
-   public recalculatePath(){(){
-
+    public recalculatePath(){
 
 
         if(!this.followTarget)
@@ -563,8 +531,10 @@ export class MovementManager {
 
 
 
+
         const player =
             this.bot.players[this.followTarget];
+
 
 
 
@@ -591,6 +561,7 @@ export class MovementManager {
 
 
 
+
             this.bot.pathfinder.setGoal(
 
                 new GoalFollow(
@@ -612,7 +583,6 @@ export class MovementManager {
 
 
     }
-
 
 
 
@@ -673,14 +643,15 @@ export class MovementManager {
 
 
 
+
         this.followTarget = undefined;
 
 
 
 
 
-        this.stuckCounter = 0;
 
+        this.stuckCounter = 0;
 
 
 
@@ -696,6 +667,7 @@ export class MovementManager {
 
 
         this.bot.pathfinder.setGoal(null);
+
 
 
 

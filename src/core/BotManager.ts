@@ -104,7 +104,7 @@ export class BotManager {
 
 
 
-        // vytvor jump controller prvý
+        // Jump Controller
 
         this.jump =
             new JumpController(
@@ -122,7 +122,7 @@ export class BotManager {
 
 
 
-        // movement dostane jump controller
+        // Movement Manager
 
         this.movement =
             new MovementManager(
@@ -139,7 +139,8 @@ export class BotManager {
 
 
 
-        // AutoEat modul
+
+        // AutoEat
 
         this.autoEat =
             new AutoEat(
