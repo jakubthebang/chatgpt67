@@ -1,7 +1,10 @@
 import { Bot } from "mineflayer";
 import { Movements, goals } from "mineflayer-pathfinder";
+import minecraftData from "minecraft-data";
+
 
 const { GoalFollow, GoalBlock } = goals;
+
 
 
 export class MovementManager {
@@ -9,9 +12,9 @@ export class MovementManager {
 
     private bot: Bot;
 
-    private following = false;
+    private followingPlayer?: string;
 
-    private followPlayer = "";
+    private followTimer?: NodeJS.Timeout;
 
 
 
@@ -30,9 +33,16 @@ export class MovementManager {
     private createMovements(){
 
 
+        const mcData =
+            minecraftData(
+                this.bot.version
+            );
+
+
         const movements =
             new Movements(
-                this.bot
+                this.bot,
+                mcData
             );
 
 
@@ -44,7 +54,7 @@ export class MovementManager {
 
         movements.canOpenDoors = true;
 
-        movements.allow1by1towers = true;
+        movements.allow1by1towers = false;
 
         movements.maxDropDown = 3;
 
@@ -52,6 +62,8 @@ export class MovementManager {
         return movements;
 
     }
+
+
 
 
 
@@ -82,9 +94,12 @@ export class MovementManager {
 
 
 
-        this.following = true;
+        this.stop();
 
-        this.followPlayer = playerName;
+
+
+        this.followingPlayer =
+            playerName;
 
 
 
@@ -98,8 +113,38 @@ export class MovementManager {
             new GoalFollow(
                 player.entity,
                 2
-            )
+            ),
+            true
         );
+
+
+
+        this.followTimer =
+            setInterval(()=>{
+
+
+                const target =
+                    this.bot.players[this.followingPlayer!];
+
+
+                if(
+                    !target ||
+                    !target.entity
+                )
+                    return;
+
+
+
+                this.bot.pathfinder.setGoal(
+                    new GoalFollow(
+                        target.entity,
+                        2
+                    ),
+                    true
+                );
+
+
+            },1000);
 
 
 
@@ -123,7 +168,8 @@ export class MovementManager {
     ){
 
 
-        this.following = false;
+        this.stop();
+
 
 
         this.bot.pathfinder.setMovements(
@@ -158,9 +204,19 @@ export class MovementManager {
     stop(){
 
 
-        this.following = false;
+        if(this.followTimer){
 
-        this.followPlayer = "";
+            clearInterval(
+                this.followTimer
+            );
+
+            this.followTimer = undefined;
+
+        }
+
+
+
+        this.followingPlayer = undefined;
 
 
 
@@ -175,12 +231,6 @@ export class MovementManager {
 
 
         this.bot.clearControlStates();
-
-
-
-        this.bot.chat(
-            "Movement stopped"
-        );
 
 
     }
