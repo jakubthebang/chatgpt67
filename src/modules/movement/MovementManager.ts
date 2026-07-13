@@ -6,6 +6,7 @@ import { EnvironmentScanner } from "../environment/EnvironmentScanner";
 import { PathDecisionSystem } from "./PathDecisionSystem";
 import { RotationController } from "./RotationController";
 import { ObstacleHandler } from "./ObstacleHandler";
+import { MovementBrain } from "./MovementBrain";
 
 
 const {
@@ -31,11 +32,11 @@ export class MovementManager {
 
     private obstacle: ObstacleHandler;
 
+    private brain: MovementBrain;
+
 
 
     private rotationTimer?: NodeJS.Timeout;
-
-    private obstacleTimer?: NodeJS.Timeout;
 
 
 
@@ -80,6 +81,7 @@ export class MovementManager {
 
 
 
+
         this.scanner =
             new EnvironmentScanner(
                 bot
@@ -103,15 +105,6 @@ export class MovementManager {
 
 
 
-        this.rotation =
-            new RotationController(
-                bot
-            );
-
-
-
-
-
         this.obstacle =
             new ObstacleHandler(
 
@@ -121,6 +114,36 @@ export class MovementManager {
 
                 this.scanner
 
+            );
+
+
+
+
+
+
+
+        this.brain =
+            new MovementBrain(
+
+                bot,
+
+                this.scanner,
+
+                this.decision,
+
+                this.obstacle
+
+            );
+
+
+
+
+
+
+
+        this.rotation =
+            new RotationController(
+                bot
             );
 
 
@@ -217,7 +240,10 @@ export class MovementManager {
 
 
 
+
         this.jump.enable();
+
+
 
 
 
@@ -263,11 +289,12 @@ export class MovementManager {
 
 
 
+        this.brain.start();
+
+
+
+
         this.startStuckDetection();
-
-
-        this.startObstacleCheck();
-
 
 
 
@@ -278,44 +305,6 @@ export class MovementManager {
             `Following ${playerName}`
 
         );
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-    private startObstacleCheck(){
-
-
-        if(this.obstacleTimer)
-            return;
-
-
-
-
-        this.obstacleTimer =
-            setInterval(()=>{
-
-
-
-                if(!this.followTarget)
-                    return;
-
-
-
-                this.obstacle.checkObstacle();
-
-
-
-
-            },200);
 
 
 
@@ -386,7 +375,6 @@ export class MovementManager {
     private startStuckDetection(){
 
 
-
         if(this.stuckTimer)
             return;
 
@@ -406,25 +394,9 @@ export class MovementManager {
 
 
 
-            if(
-                this.decision.shouldRecalculate()
-            ){
-
-
-                this.recalculatePath();
-
-
-                return;
-
-            }
-
-
-
-
-
-
             const pos =
                 this.bot.entity.position;
+
 
 
 
@@ -474,11 +446,10 @@ export class MovementManager {
 
 
 
-
             if(this.stuckCounter >= 3){
 
 
-                this.recalculatePath();
+                this.bot.pathfinder.setGoal(null);
 
 
                 this.stuckCounter = 0;
@@ -521,85 +492,6 @@ export class MovementManager {
 
 
 
-    private recalculatePath(){
-
-
-
-        if(!this.followTarget)
-            return;
-
-
-
-
-        const player =
-            this.bot.players[this.followTarget];
-
-
-
-
-
-
-        if(
-            player &&
-            player.entity
-        ){
-
-
-
-            this.bot.pathfinder.setGoal(null);
-
-
-
-
-
-            setTimeout(()=>{
-
-
-
-                this.bot.pathfinder.setMovements(
-
-                    this.createMovements()
-
-                );
-
-
-
-
-
-                this.bot.pathfinder.setGoal(
-
-                    new GoalFollow(
-
-                        player.entity,
-
-                        1
-
-                    ),
-
-                    true
-
-                );
-
-
-
-            },200);
-
-
-
-        }
-
-
-
-    }
-
-
-
-
-
-
-
-
-
     stop(){
 
 
@@ -613,24 +505,6 @@ export class MovementManager {
 
 
             this.stuckTimer = undefined;
-
-
-        }
-
-
-
-
-
-
-        if(this.obstacleTimer){
-
-
-            clearInterval(
-                this.obstacleTimer
-            );
-
-
-            this.obstacleTimer = undefined;
 
 
         }
@@ -654,6 +528,12 @@ export class MovementManager {
 
         }
 
+
+
+
+
+
+        this.brain.stop();
 
 
 
