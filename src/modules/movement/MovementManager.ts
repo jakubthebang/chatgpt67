@@ -1,12 +1,13 @@
 import { Bot } from "mineflayer";
 import { Movements, goals } from "mineflayer-pathfinder";
-import { JumpController } from "./JumpController";
 
+import { JumpController } from "./JumpController";
 import { EnvironmentScanner } from "../environment/EnvironmentScanner";
 import { PathDecisionSystem } from "./PathDecisionSystem";
 import { RotationController } from "./RotationController";
 import { ObstacleHandler } from "./ObstacleHandler";
 import { MovementBrain } from "./MovementBrain";
+import { StuckRecoveryAI } from "./StuckRecoveryAI";
 
 
 
@@ -34,6 +35,8 @@ export class MovementManager {
     private obstacle: ObstacleHandler;
 
     private brain: MovementBrain;
+
+    private stuckAI: StuckRecoveryAI;
 
 
 
@@ -82,10 +85,13 @@ export class MovementManager {
 
 
 
+
         this.scanner =
             new EnvironmentScanner(
                 bot
             );
+
+
 
 
 
@@ -100,6 +106,8 @@ export class MovementManager {
 
 
 
+
+
         this.obstacle =
             new ObstacleHandler(
 
@@ -110,6 +118,9 @@ export class MovementManager {
                 this.scanner
 
             );
+
+
+
 
 
 
@@ -128,9 +139,32 @@ export class MovementManager {
 
 
 
+
+
+
+
         this.rotation =
             new RotationController(
                 bot
+            );
+
+
+
+
+
+
+
+        this.stuckAI =
+            new StuckRecoveryAI(
+
+                bot,
+
+                ()=>{
+
+                    this.recalculatePath();
+
+                }
+
             );
 
 
@@ -219,6 +253,7 @@ export class MovementManager {
 
 
 
+
         this.followTarget =
             playerName;
 
@@ -227,6 +262,7 @@ export class MovementManager {
 
 
         this.jump.enable();
+
 
 
 
@@ -245,6 +281,7 @@ export class MovementManager {
             this.createMovements()
 
         );
+
 
 
 
@@ -294,7 +331,6 @@ export class MovementManager {
         );
 
 
-
     }
 
 
@@ -316,7 +352,9 @@ export class MovementManager {
     ){
 
 
+
         this.stop();
+
 
 
 
@@ -325,6 +363,7 @@ export class MovementManager {
             this.createMovements()
 
         );
+
 
 
 
@@ -341,6 +380,7 @@ export class MovementManager {
             )
 
         );
+
 
 
     }
@@ -374,19 +414,21 @@ export class MovementManager {
 
 
 
-            // počas skoku neruš cestu
 
-            if(!this.bot.entity.onGround){
 
+            // ignoruj skoky
+
+            if(!this.bot.entity.onGround)
                 return;
 
-            }
+
 
 
 
 
             const pos =
                 this.bot.entity.position;
+
 
 
 
@@ -416,7 +458,8 @@ export class MovementManager {
 
 
 
-            if(moved < 0.05){
+
+            if(moved < 0.08){
 
 
                 this.stuckCounter++;
@@ -437,19 +480,34 @@ export class MovementManager {
 
 
 
-            // 0.5 sekundy bez pohybu + stena
 
-            if(
+            // 3x500ms = 1.5 sekundy
 
-                this.stuckCounter >= 2 &&
-
-                this.obstacle.isWallAhead()
-
-            ){
+            if(this.stuckCounter >= 3){
 
 
 
-                this.recoverFromWall();
+                console.log(
+                    "[AI] Bot is stuck"
+                );
+
+
+
+
+
+                this.bot.clearControlStates();
+
+
+
+                this.bot.pathfinder.setGoal(null);
+
+
+
+
+
+                this.stuckAI.recover();
+
+
 
 
 
@@ -457,6 +515,7 @@ export class MovementManager {
 
 
             }
+
 
 
 
@@ -479,43 +538,7 @@ export class MovementManager {
 
 
 
-
-        },250);
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-    private recoverFromWall(){
-
-
-
-        this.bot.clearControlStates();
-
-
-
-        this.bot.pathfinder.setGoal(null);
-
-
-
-
-
-        setTimeout(()=>{
-
-
-            this.recalculatePath();
-
-
-
-        },300);
+        },500);
 
 
 
@@ -539,9 +562,10 @@ export class MovementManager {
 
 
 
-        const player =
 
+        const player =
             this.bot.players[this.followTarget];
+
 
 
 
@@ -621,6 +645,7 @@ export class MovementManager {
 
 
 
+
         if(this.rotationTimer){
 
 
@@ -641,7 +666,9 @@ export class MovementManager {
 
 
 
+
         this.brain.stop();
+
 
 
 
@@ -650,7 +677,11 @@ export class MovementManager {
 
 
 
+
+
         this.stuckCounter = 0;
+
+
 
 
 
@@ -662,11 +693,17 @@ export class MovementManager {
 
 
 
+
+
         this.bot.pathfinder.setGoal(null);
 
 
 
+
+
         this.bot.pathfinder.stop();
+
+
 
 
 
