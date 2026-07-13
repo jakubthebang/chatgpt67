@@ -2,7 +2,10 @@ import { Bot } from "mineflayer";
 import { Movements, goals } from "mineflayer-pathfinder";
 
 
-const { GoalFollow, GoalBlock } = goals;
+const {
+    GoalFollow,
+    GoalBlock
+} = goals;
 
 
 
@@ -11,9 +14,9 @@ export class MovementManager {
 
     private bot: Bot;
 
-    private followingPlayer?: string;
+    private followInterval?: NodeJS.Timeout;
 
-    private followTimer?: NodeJS.Timeout;
+    private currentTarget?: string;
 
 
 
@@ -29,7 +32,7 @@ export class MovementManager {
 
 
 
-    private createMovements(){
+    private setupMovements(){
 
 
         const movements =
@@ -38,15 +41,15 @@ export class MovementManager {
             );
 
 
-        movements.canDig = false;
+        // pohybové pravidlá
 
-        movements.allowParkour = true;
+        movements.canDig = false;
 
         movements.allowSprinting = true;
 
-        movements.canOpenDoors = true;
+        movements.allowParkour = false;
 
-        movements.allow1by1towers = false;
+        movements.canOpenDoors = true;
 
         movements.maxDropDown = 3;
 
@@ -90,13 +93,13 @@ export class MovementManager {
 
 
 
-        this.followingPlayer =
+        this.currentTarget =
             playerName;
 
 
 
         this.bot.pathfinder.setMovements(
-            this.createMovements()
+            this.setupMovements()
         );
 
 
@@ -104,24 +107,24 @@ export class MovementManager {
         this.bot.pathfinder.setGoal(
             new GoalFollow(
                 player.entity,
-                2
+                3
             ),
             true
         );
 
 
 
-        this.followTimer =
+        this.followInterval =
             setInterval(()=>{
 
 
-                if(!this.followingPlayer)
+                if(!this.currentTarget)
                     return;
 
 
 
                 const target =
-                    this.bot.players[this.followingPlayer];
+                    this.bot.players[this.currentTarget];
 
 
 
@@ -136,13 +139,13 @@ export class MovementManager {
                 this.bot.pathfinder.setGoal(
                     new GoalFollow(
                         target.entity,
-                        2
+                        3
                     ),
                     true
                 );
 
 
-            },1000);
+            },500);
 
 
 
@@ -152,6 +155,8 @@ export class MovementManager {
 
 
     }
+
+
 
 
 
@@ -171,7 +176,7 @@ export class MovementManager {
 
 
         this.bot.pathfinder.setMovements(
-            this.createMovements()
+            this.setupMovements()
         );
 
 
@@ -199,22 +204,30 @@ export class MovementManager {
 
 
 
+
     stop(){
 
 
-        if(this.followTimer){
+        if(this.followInterval){
 
             clearInterval(
-                this.followTimer
+                this.followInterval
             );
 
-            this.followTimer = undefined;
+            this.followInterval = undefined;
 
         }
 
 
 
-        this.followingPlayer = undefined;
+        this.currentTarget =
+            undefined;
+
+
+
+        this.bot.pathfinder.setGoal(
+            null
+        );
 
 
 
@@ -226,6 +239,7 @@ export class MovementManager {
 
 
     }
+
 
 
 }
