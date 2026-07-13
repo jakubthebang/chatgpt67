@@ -1,0 +1,9 @@
+{
+  "minecraft": {
+    "host": "localhost",
+    "port": 25565,
+    "username": "AIBotByJakux",
+    "version": "1.21.4"
+  },
+  "prefix": "."
+}
