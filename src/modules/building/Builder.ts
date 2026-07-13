@@ -1,88 +1,88 @@
 import { Bot } from "mineflayer";
+import { Vec3 } from "vec3";
 import { BlockData } from "./BlueprintLoader";
 
 
 export class Builder {
 
 
-constructor(
-private bot:Bot
-){}
+    constructor(
+        private bot: Bot
+    ) {}
 
 
 
-async build(
-blocks:BlockData[]
-){
+    async build(
+        blocks: BlockData[]
+    ) {
 
 
-const origin =
-this.bot.entity.position;
+        const origin =
+            this.bot.entity.position;
 
 
-for(
-const block of blocks
-){
+        for(
+            const block of blocks
+        ) {
 
 
-const target =
-this.bot.blockAt(
-origin.offset(
-block.x,
-block.y,
-block.z
-)
-);
-
-
-
-if(!target)
-continue;
+            const target =
+                this.bot.blockAt(
+                    origin.offset(
+                        block.x,
+                        block.y,
+                        block.z
+                    )
+                );
 
 
 
-const item =
-this.bot.inventory.items()
-.find(
-i=>i.name.includes(
-block.block
-)
-);
+            if(!target)
+                continue;
 
 
 
-if(!item)
-continue;
+            const item =
+                this.bot.inventory.items()
+                .find(
+                    i => i.name.includes(
+                        block.block
+                    )
+                );
 
 
 
-await this.bot.equip(
-item,
-"hand"
-);
+            if(!item)
+                continue;
 
 
 
-try{
-
-
-await this.bot.placeBlock(
-target,
-{
-x:0,
-y:1,
-z:0
-}
-);
-
-
-}catch{}
-
-}
+            await this.bot.equip(
+                item,
+                "hand"
+            );
 
 
 
-}
+            try {
+
+
+                await this.bot.placeBlock(
+                    target,
+                    new Vec3(
+                        0,
+                        1,
+                        0
+                    )
+                );
+
+
+            } catch {}
+
+        }
+
+
+    }
 
 
 }
