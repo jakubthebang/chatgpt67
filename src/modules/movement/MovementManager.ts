@@ -21,30 +21,25 @@ export class MovementManager {
 
     private jump: JumpController;
 
-
     private scanner: EnvironmentScanner;
 
     private decision: PathDecisionSystem;
-
 
     private rotation: RotationController;
 
     private rotationTimer?: NodeJS.Timeout;
 
 
-
     private followTarget?: string;
-
 
     private stuckTimer?: NodeJS.Timeout;
 
 
-
     private lastPosition = {
 
-        x:0,
-        y:0,
-        z:0
+        x: 0,
+        y: 0,
+        z: 0
 
     };
 
@@ -65,11 +60,9 @@ export class MovementManager {
 
     ){
 
-
         this.bot = bot;
 
         this.jump = jump;
-
 
 
         this.scanner =
@@ -86,7 +79,6 @@ export class MovementManager {
                 this.scanner
 
             );
-
 
 
         this.rotation =
@@ -117,13 +109,19 @@ export class MovementManager {
 
         movements.canDig = false;
 
+
         movements.allowSprinting = true;
 
-        movements.allowParkour = false;
+
+        // zapnuté kvôli 1 block jumpom
+        movements.allowParkour = true;
+
 
         movements.allow1by1towers = false;
 
+
         movements.canOpenDoors = true;
+
 
         movements.maxDropDown = 3;
 
@@ -156,9 +154,11 @@ export class MovementManager {
             !player.entity
         ){
 
+
             this.bot.chat(
                 `Player ${playerName} not found`
             );
+
 
             return;
 
@@ -178,7 +178,10 @@ export class MovementManager {
 
 
 
+
+
         this.jump.enable();
+
 
 
 
@@ -206,6 +209,7 @@ export class MovementManager {
 
         this.bot.pathfinder.setGoal(
 
+
             new GoalFollow(
 
                 player.entity,
@@ -214,7 +218,9 @@ export class MovementManager {
 
             ),
 
+
             true
+
 
         );
 
@@ -224,6 +230,7 @@ export class MovementManager {
 
 
         this.startStuckDetection();
+
 
 
 
@@ -260,11 +267,14 @@ export class MovementManager {
 
 
 
+
         this.bot.pathfinder.setMovements(
 
             this.createMovements()
 
         );
+
+
 
 
 
@@ -296,8 +306,10 @@ export class MovementManager {
     private startStuckDetection(){
 
 
+
         if(this.stuckTimer)
             return;
+
 
 
 
@@ -306,8 +318,10 @@ export class MovementManager {
             setInterval(()=>{
 
 
+
             if(!this.followTarget)
                 return;
+
 
 
 
@@ -319,7 +333,9 @@ export class MovementManager {
 
             ){
 
+
                 this.recalculatePath();
+
 
                 return;
 
@@ -332,6 +348,7 @@ export class MovementManager {
 
             const pos =
                 this.bot.entity.position;
+
 
 
 
@@ -360,16 +377,23 @@ export class MovementManager {
 
 
 
+
             if(moved < 0.15){
 
+
                 this.stuckCounter++;
+
 
             }
             else{
 
+
                 this.stuckCounter = 0;
 
+
             }
+
+
 
 
 
@@ -380,6 +404,7 @@ export class MovementManager {
 
                 this.recalculatePath();
 
+
                 this.stuckCounter = 0;
 
 
@@ -390,13 +415,16 @@ export class MovementManager {
 
 
 
+
             this.lastPosition = {
 
-                x:pos.x,
 
-                y:pos.y,
+                x: pos.x,
 
-                z:pos.z
+                y: pos.y,
+
+                z: pos.z
+
 
             };
 
@@ -421,15 +449,16 @@ export class MovementManager {
     private recalculatePath(){
 
 
-
         if(!this.followTarget)
             return;
 
 
 
 
+
         const player =
             this.bot.players[this.followTarget];
+
 
 
 
@@ -449,7 +478,9 @@ export class MovementManager {
 
 
 
+
             setTimeout(()=>{
+
 
 
                 this.bot.pathfinder.setMovements(
@@ -464,6 +495,7 @@ export class MovementManager {
 
                 this.bot.pathfinder.setGoal(
 
+
                     new GoalFollow(
 
                         player.entity,
@@ -472,7 +504,9 @@ export class MovementManager {
 
                     ),
 
+
                     true
+
 
                 );
 
@@ -509,6 +543,7 @@ export class MovementManager {
 
             this.stuckTimer = undefined;
 
+
         }
 
 
@@ -528,7 +563,6 @@ export class MovementManager {
 
 
         }
-
 
 
 

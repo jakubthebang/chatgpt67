@@ -7,11 +7,17 @@ export class JumpController {
 
     private bot: Bot;
 
+
     private interval?: NodeJS.Timeout;
+
 
     private jumping = false;
 
+
     private enabled = false;
+
+
+    private retrying = false;
 
 
 
@@ -27,11 +33,15 @@ export class JumpController {
 
 
 
+
+
+
     start(){
 
 
         if(this.interval)
             return;
+
 
 
         this.interval = setInterval(()=>{
@@ -40,10 +50,14 @@ export class JumpController {
             this.checkJump();
 
 
+
         },100);
 
 
     }
+
+
+
 
 
 
@@ -59,13 +73,20 @@ export class JumpController {
 
 
 
+
+
+
     disable(){
+
 
         this.enabled = false;
 
+
         this.bot.clearControlStates();
 
+
     }
+
 
 
 
@@ -99,6 +120,7 @@ export class JumpController {
 
 
 
+
     private checkJump(){
 
 
@@ -110,19 +132,22 @@ export class JumpController {
             return;
 
 
-
         if(!bot.entity)
             return;
-
 
 
         if(this.jumping)
             return;
 
 
+        if(this.retrying)
+            return;
+
 
         if(!bot.entity.onGround)
             return;
+
+
 
 
 
@@ -140,9 +165,9 @@ export class JumpController {
 
 
 
-        // kontrola pred botom
+        const distance = 1.2;
 
-        const distance = 1.5;
+
 
 
 
@@ -152,10 +177,12 @@ export class JumpController {
             );
 
 
+
         const blockZ =
             Math.floor(
                 pos.z + Math.cos(yaw) * distance
             );
+
 
 
         const blockY =
@@ -167,25 +194,46 @@ export class JumpController {
 
 
 
+
+
         const block =
             bot.blockAt(
+
                 new Vec3(
+
                     blockX,
+
                     blockY,
+
                     blockZ
+
                 )
+
             );
+
+
+
+
 
 
 
         const above =
             bot.blockAt(
+
                 new Vec3(
+
                     blockX,
+
                     blockY + 1,
+
                     blockZ
+
                 )
+
             );
+
+
+
 
 
 
@@ -199,8 +247,8 @@ export class JumpController {
 
 
 
-        // 1 block pred botom
-        // nad nim je miesto na skok
+
+
 
         if(
 
@@ -213,10 +261,11 @@ export class JumpController {
         ){
 
 
-            this.jump();
+            this.performJump();
 
 
         }
+
 
 
     }
@@ -227,7 +276,9 @@ export class JumpController {
 
 
 
-    private jump(){
+
+
+    private performJump(){
 
 
         const bot = this.bot;
@@ -237,34 +288,233 @@ export class JumpController {
 
 
 
-        // krátky vanilla jump
+        // malá príprava pred skokom
 
-        bot.setControlState(
-            "jump",
-            true
-        );
+        bot.clearControlStates();
 
 
 
         setTimeout(()=>{
 
 
+
             bot.setControlState(
-                "jump",
-                false
+
+                "forward",
+
+                true
+
             );
 
+
+
+            bot.setControlState(
+
+                "jump",
+
+                true
+
+            );
+
+
+
+
+
+            setTimeout(()=>{
+
+
+
+                bot.setControlState(
+
+                    "jump",
+
+                    false
+
+                );
+
+
+
+            },150);
+
+
+
+
+
+            setTimeout(()=>{
+
+
+                bot.setControlState(
+
+                    "forward",
+
+                    false
+
+                );
+
+
+
+                this.checkJumpResult();
+
+
+
+            },700);
+
+
+
+        },100);
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    private checkJumpResult(){
+
+
+
+        const bot = this.bot;
+
+
+
+        const pos =
+            bot.entity.position;
+
+
+
+        const blockAbove =
+            bot.blockAt(
+
+                pos.offset(
+                    0,
+                    1,
+                    0
+                )
+
+            );
+
+
+
+
+
+
+
+        // stále je pri prekážke
+        // pravdepodobne skok zlyhal
+
+        if(
+
+            blockAbove &&
+
+            blockAbove.boundingBox === "block"
+
+        ){
+
+
+            this.retryJump();
+
+
+        }
+        else{
 
 
             this.jumping = false;
 
 
-
-        },150);
+        }
 
 
 
     }
+
+
+
+
+
+
+
+
+
+    private retryJump(){
+
+
+
+        const bot = this.bot;
+
+
+
+        this.retrying = true;
+
+
+
+
+
+        // cúvnutie dozadu
+
+
+        bot.setControlState(
+
+            "back",
+
+            true
+
+        );
+
+
+
+
+
+        setTimeout(()=>{
+
+
+
+            bot.setControlState(
+
+                "back",
+
+                false
+
+            );
+
+
+
+
+
+            setTimeout(()=>{
+
+
+
+                this.jumping = false;
+
+                this.retrying = false;
+
+
+
+                this.performJump();
+
+
+
+            },300);
+
+
+
+
+
+        },400);
+
+
+
+
+    }
+
+
 
 
 

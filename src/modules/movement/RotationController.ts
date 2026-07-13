@@ -33,8 +33,50 @@ export class RotationController {
 
 
         await this.bot.lookAt(
-
             position,
+            true
+        );
+
+
+    }
+
+
+
+
+
+
+
+    async lookAtPlayer(
+        playerName:string
+    ){
+
+
+        const player =
+            this.bot.players[playerName];
+
+
+
+        if(
+            !player ||
+            !player.entity
+        )
+            return;
+
+
+
+
+        const target =
+            player.entity.position.offset(
+                0,
+                1.4,
+                0
+            );
+
+
+
+        await this.bot.lookAt(
+
+            target,
 
             true
 
@@ -50,90 +92,29 @@ export class RotationController {
 
 
 
-    async lookAtPlayer(
-        playerName:string
-    ){
-
-
-
-        const player =
-
-            this.bot.players[playerName];
-
-
-
-        if(
-            !player ||
-            !player.entity
-        )
-            return;
-
-
-
-
-        await this.lookAt(
-
-            player.entity.position.offset(
-                0,
-                1.5,
-                0
-            )
-
-        );
-
-
-    }
-
-
-
-
-
-
-
-
-
     startFollowLook(
         playerName:string
     ){
 
 
-
-        const interval = setInterval(()=>{
-
-
-
-            const player =
-
-                this.bot.players[playerName];
+        const timer =
+            setInterval(()=>{
 
 
+                this.lookAtPlayer(
+                    playerName
+                );
 
-            if(
-                !player ||
-                !player.entity
-            )
-                return;
+
+            },100);
 
 
 
-
-
-            this.lookAtPlayer(
-                playerName
-            );
-
-
-
-        },500);
-
-
-
-
-
-        return interval;
+        return timer;
 
 
     }
+
 
 
 
@@ -142,12 +123,12 @@ export class RotationController {
 
 
     stop(
-        interval:NodeJS.Timeout
+        timer:NodeJS.Timeout
     ){
 
 
         clearInterval(
-            interval
+            timer
         );
 
 
