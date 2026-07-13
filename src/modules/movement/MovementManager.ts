@@ -4,6 +4,7 @@ import { JumpController } from "./JumpController";
 
 import { EnvironmentScanner } from "../environment/EnvironmentScanner";
 import { PathDecisionSystem } from "./PathDecisionSystem";
+import { RotationController } from "./RotationController";
 
 
 const {
@@ -26,6 +27,12 @@ export class MovementManager {
     private decision: PathDecisionSystem;
 
 
+    private rotation: RotationController;
+
+    private rotationTimer?: NodeJS.Timeout;
+
+
+
     private followTarget?: string;
 
 
@@ -43,6 +50,7 @@ export class MovementManager {
 
 
     private stuckCounter = 0;
+
 
 
 
@@ -80,6 +88,13 @@ export class MovementManager {
             );
 
 
+
+        this.rotation =
+            new RotationController(
+                bot
+            );
+
+
     }
 
 
@@ -102,18 +117,13 @@ export class MovementManager {
 
         movements.canDig = false;
 
-
         movements.allowSprinting = true;
-
 
         movements.allowParkour = false;
 
-
         movements.allow1by1towers = false;
 
-
         movements.canOpenDoors = true;
-
 
         movements.maxDropDown = 3;
 
@@ -146,11 +156,9 @@ export class MovementManager {
             !player.entity
         ){
 
-
             this.bot.chat(
                 `Player ${playerName} not found`
             );
-
 
             return;
 
@@ -170,8 +178,17 @@ export class MovementManager {
 
 
 
-
         this.jump.enable();
+
+
+
+
+        this.rotationTimer =
+            this.rotation.startFollowLook(
+                playerName
+            );
+
+
 
 
 
@@ -189,7 +206,6 @@ export class MovementManager {
 
         this.bot.pathfinder.setGoal(
 
-
             new GoalFollow(
 
                 player.entity,
@@ -198,11 +214,10 @@ export class MovementManager {
 
             ),
 
-
             true
 
-
         );
+
 
 
 
@@ -241,9 +256,7 @@ export class MovementManager {
     ){
 
 
-
         this.stop();
-
 
 
 
@@ -252,7 +265,6 @@ export class MovementManager {
             this.createMovements()
 
         );
-
 
 
 
@@ -284,15 +296,14 @@ export class MovementManager {
     private startStuckDetection(){
 
 
-
         if(this.stuckTimer)
             return;
 
 
 
 
-        this.stuckTimer = setInterval(()=>{
-
+        this.stuckTimer =
+            setInterval(()=>{
 
 
             if(!this.followTarget)
@@ -302,24 +313,17 @@ export class MovementManager {
 
 
 
-
-            // kontrola prostredia
-
             if(
 
                 this.decision.shouldRecalculate()
 
             ){
 
-
                 this.recalculatePath();
-
 
                 return;
 
             }
-
-
 
 
 
@@ -335,22 +339,17 @@ export class MovementManager {
 
             const moved =
 
-
                 Math.abs(
                     pos.x - this.lastPosition.x
                 )
 
-
                 +
-
 
                 Math.abs(
                     pos.y - this.lastPosition.y
                 )
 
-
                 +
-
 
                 Math.abs(
                     pos.z - this.lastPosition.z
@@ -361,23 +360,16 @@ export class MovementManager {
 
 
 
-
             if(moved < 0.15){
 
-
                 this.stuckCounter++;
-
 
             }
             else{
 
-
                 this.stuckCounter = 0;
 
-
             }
-
-
 
 
 
@@ -386,9 +378,7 @@ export class MovementManager {
             if(this.stuckCounter >= 3){
 
 
-
                 this.recalculatePath();
-
 
                 this.stuckCounter = 0;
 
@@ -400,16 +390,13 @@ export class MovementManager {
 
 
 
-
             this.lastPosition = {
-
 
                 x:pos.x,
 
                 y:pos.y,
 
                 z:pos.z
-
 
             };
 
@@ -441,34 +428,28 @@ export class MovementManager {
 
 
 
-
         const player =
-
             this.bot.players[this.followTarget];
 
 
 
 
 
-
         if(
-
             player &&
-
             player.entity
-
         ){
 
 
 
-            this.bot.pathfinder.setGoal(null);
-
+            this.bot.pathfinder.setGoal(
+                null
+            );
 
 
 
 
             setTimeout(()=>{
-
 
 
                 this.bot.pathfinder.setMovements(
@@ -483,7 +464,6 @@ export class MovementManager {
 
                 this.bot.pathfinder.setGoal(
 
-
                     new GoalFollow(
 
                         player.entity,
@@ -492,9 +472,7 @@ export class MovementManager {
 
                     ),
 
-
                     true
-
 
                 );
 
@@ -525,16 +503,33 @@ export class MovementManager {
 
 
             clearInterval(
-
                 this.stuckTimer
-
             );
 
 
             this.stuckTimer = undefined;
 
+        }
+
+
+
+
+
+
+        if(this.rotationTimer){
+
+
+            this.rotation.stop(
+                this.rotationTimer
+            );
+
+
+            this.rotationTimer = undefined;
+
 
         }
+
+
 
 
 
