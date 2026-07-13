@@ -9,7 +9,9 @@ export class MovementManager {
 
     private bot: Bot;
 
-    private followInterval?: NodeJS.Timeout;
+    private following = false;
+
+    private followPlayer = "";
 
 
 
@@ -20,6 +22,8 @@ export class MovementManager {
         this.bot = bot;
 
     }
+
+
 
 
 
@@ -34,11 +38,15 @@ export class MovementManager {
 
         movements.canDig = false;
 
-        movements.allow1by1towers = false;
-
         movements.allowParkour = true;
 
         movements.allowSprinting = true;
+
+        movements.canOpenDoors = true;
+
+        movements.allow1by1towers = true;
+
+        movements.maxDropDown = 3;
 
 
         return movements;
@@ -49,10 +57,8 @@ export class MovementManager {
 
 
 
-
-
     follow(
-        playerName: string
+        playerName:string
     ){
 
 
@@ -66,11 +72,9 @@ export class MovementManager {
             !player.entity
         ){
 
-
             this.bot.chat(
                 `Player ${playerName} not found`
             );
-
 
             return;
 
@@ -78,13 +82,14 @@ export class MovementManager {
 
 
 
-        const movements =
-            this.createMovements();
+        this.following = true;
+
+        this.followPlayer = playerName;
 
 
 
         this.bot.pathfinder.setMovements(
-            movements
+            this.createMovements()
         );
 
 
@@ -93,14 +98,7 @@ export class MovementManager {
             new GoalFollow(
                 player.entity,
                 2
-            ),
-            true
-        );
-
-
-
-        this.startSpeedSync(
-            playerName
+            )
         );
 
 
@@ -118,68 +116,6 @@ export class MovementManager {
 
 
 
-    private startSpeedSync(
-        playerName:string
-    ){
-
-
-        if(this.followInterval){
-
-            clearInterval(
-                this.followInterval
-            );
-
-        }
-
-
-
-        this.followInterval =
-            setInterval(()=>{
-
-
-                const player =
-                    this.bot.players[playerName];
-
-
-
-                if(
-                    !player ||
-                    !player.entity
-                )
-                    return;
-
-
-
-                const velocity =
-                    player.entity.velocity;
-
-
-
-                const speed =
-                    Math.sqrt(
-                        velocity.x ** 2 +
-                        velocity.z ** 2
-                    );
-
-
-
-                this.bot.setControlState(
-                    "sprint",
-                    speed > 0.15
-                );
-
-
-            },500);
-
-
-    }
-
-
-
-
-
-
-
     goto(
         x:number,
         y:number,
@@ -187,13 +123,11 @@ export class MovementManager {
     ){
 
 
-        const movements =
-            this.createMovements();
-
+        this.following = false;
 
 
         this.bot.pathfinder.setMovements(
-            movements
+            this.createMovements()
         );
 
 
@@ -224,26 +158,19 @@ export class MovementManager {
     stop(){
 
 
-        this.bot.pathfinder.stop();
+        this.following = false;
+
+        this.followPlayer = "";
 
 
 
-        if(this.followInterval){
-
-            clearInterval(
-                this.followInterval
-            );
-
-            this.followInterval = undefined;
-
-        }
-
-
-
-        this.bot.setControlState(
-            "sprint",
-            false
+        this.bot.pathfinder.setGoal(
+            null
         );
+
+
+
+        this.bot.pathfinder.stop();
 
 
 
