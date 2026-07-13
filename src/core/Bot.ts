@@ -12,7 +12,6 @@ import { MovementManager } from "../modules/movement/MovementManager";
 import { JumpController } from "../modules/movement/JumpController";
 
 
-
 export class BotManager {
 
 
@@ -32,14 +31,11 @@ export class BotManager {
 
 
 
-
-
     constructor() {
 
 
         this.tasks =
             new TaskManager();
-
 
 
         this.ai =
@@ -48,14 +44,10 @@ export class BotManager {
             );
 
 
-
         this.events =
             new EventManager();
 
-
     }
-
-
 
 
 
@@ -128,7 +120,6 @@ export class BotManager {
 
 
 
-
         this.bot.once(
             "spawn",
             () => {
@@ -139,6 +130,10 @@ export class BotManager {
                 );
 
 
+                // Vanilla Auto Jump
+                this.jump.start();
+
+
 
                 this.bot.chat(
                     "AI Assistant online. Type .help"
@@ -147,6 +142,7 @@ export class BotManager {
 
             }
         );
+
 
 
 
