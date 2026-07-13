@@ -7,7 +7,7 @@ export class ThoughtLogger {
     private bot: Bot;
 
 
-    private enabled = true;
+    private enabled = false;
 
 
     private lastMessage = "";

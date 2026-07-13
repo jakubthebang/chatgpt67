@@ -19,9 +19,6 @@ export class ObstacleHandler {
     private handling = false;
 
 
-    private stuckTime = 0;
-
-
 
     constructor(
 
@@ -59,27 +56,7 @@ export class ObstacleHandler {
 
 
 
-        if(!this.scanFront())
-            return;
-
-
-
-        this.stuckTime++;
-
-
-
-        // čakáme približne 2 sekundy
-
-        if(this.stuckTime < 8)
-            return;
-
-
-
-        this.stuckTime = 0;
-
-
-
-        this.handleObstacle();
+        return this.isWallAhead();
 
 
     }
@@ -92,7 +69,14 @@ export class ObstacleHandler {
 
 
 
-    private scanFront(){
+    public isWallAhead(): boolean {
+
+
+
+        if(!this.bot.entity)
+            return false;
+
+
 
 
         const pos =
@@ -105,22 +89,34 @@ export class ObstacleHandler {
 
 
 
+
+
+        const distance = 1;
+
+
+
+
+
         const x =
             Math.floor(
-                pos.x - Math.sin(yaw)
+                pos.x - Math.sin(yaw) * distance
             );
 
 
 
         const z =
             Math.floor(
-                pos.z + Math.cos(yaw)
+                pos.z + Math.cos(yaw) * distance
             );
 
 
 
         const y =
-            Math.floor(pos.y);
+            Math.floor(
+                pos.y
+            );
+
+
 
 
 
@@ -130,12 +126,17 @@ export class ObstacleHandler {
             this.bot.blockAt(
 
                 new Vec3(
+
                     x,
+
                     y,
+
                     z
+
                 )
 
             );
+
 
 
 
@@ -146,7 +147,15 @@ export class ObstacleHandler {
 
 
 
-        return block.boundingBox === "block";
+
+
+
+        return (
+
+            block.boundingBox === "block"
+
+        );
+
 
 
     }
@@ -159,132 +168,26 @@ export class ObstacleHandler {
 
 
 
-    private async handleObstacle(){
-
+    startHandling(){
 
 
         this.handling = true;
 
 
+    }
 
 
-        this.bot.clearControlStates();
 
 
 
-        // najskôr skúsi obísť doprava
 
-        const env =
-            this.scanner.scan();
 
-
-
-
-
-
-        if(!env.right.solid){
-
-
-
-            this.bot.setControlState(
-                "right",
-                true
-            );
-
-
-
-            await this.wait(600);
-
-
-
-            this.bot.setControlState(
-                "right",
-                false
-            );
-
-
-
-            this.handling = false;
-
-            return;
-
-        }
-
-
-
-
-
-
-
-
-        // potom doľava
-
-        if(!env.left.solid){
-
-
-
-            this.bot.setControlState(
-                "left",
-                true
-            );
-
-
-
-            await this.wait(600);
-
-
-
-            this.bot.setControlState(
-                "left",
-                false
-            );
-
-
-
-            this.handling = false;
-
-            return;
-
-        }
-
-
-
-
-
-
-
-
-        // ak sa nedá obísť cúvne
-
-        this.bot.setControlState(
-
-            "back",
-
-            true
-
-        );
-
-
-
-        await this.wait(700);
-
-
-
-        this.bot.setControlState(
-
-            "back",
-
-            false
-
-        );
-
-
+    stopHandling(){
 
 
         this.handling = false;
 
 
-
     }
 
 
@@ -292,21 +195,6 @@ export class ObstacleHandler {
 
 
 
-
-
-
-    private wait(
-        ms:number
-    ){
-
-        return new Promise(
-
-            resolve =>
-                setTimeout(resolve,ms)
-
-        );
-
-    }
 
 
 
