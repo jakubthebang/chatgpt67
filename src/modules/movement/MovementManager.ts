@@ -6,7 +6,9 @@ const { GoalFollow, GoalBlock } = goals;
 
 export class MovementManager {
 
+
     private bot: Bot;
+
 
 
     constructor(
@@ -19,9 +21,33 @@ export class MovementManager {
 
 
 
+    private createMovements(){
+
+        const movements =
+            new Movements(
+                this.bot
+            );
+
+
+        movements.canDig = false;
+
+        movements.allow1by1towers = false;
+
+        movements.allowParkour = true;
+
+
+        return movements;
+
+    }
+
+
+
+
+
     follow(
         playerName: string
     ){
+
 
         const player =
             this.bot.players[playerName];
@@ -33,9 +59,11 @@ export class MovementManager {
             !player.entity
         ){
 
+
             this.bot.chat(
                 `Player ${playerName} not found`
             );
+
 
             return;
 
@@ -44,9 +72,7 @@ export class MovementManager {
 
 
         const movements =
-            new Movements(
-                this.bot
-            );
+            this.createMovements();
 
 
 
@@ -60,7 +86,8 @@ export class MovementManager {
             new GoalFollow(
                 player.entity,
                 2
-            )
+            ),
+            true
         );
 
 
@@ -69,7 +96,10 @@ export class MovementManager {
             `Following ${playerName}`
         );
 
+
     }
+
+
 
 
 
@@ -84,9 +114,7 @@ export class MovementManager {
 
 
         const movements =
-            new Movements(
-                this.bot
-            );
+            this.createMovements();
 
 
 
@@ -110,7 +138,10 @@ export class MovementManager {
             `Going to ${x} ${y} ${z}`
         );
 
+
     }
+
+
 
 
 
@@ -120,6 +151,7 @@ export class MovementManager {
 
 
         this.bot.pathfinder.stop();
+
 
 
         this.bot.chat(
