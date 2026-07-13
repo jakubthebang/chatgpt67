@@ -1,49 +1,67 @@
 import { Bot } from "mineflayer";
+import mcDataLoader from "minecraft-data";
 
 
 export class RecipeFinder {
 
 
-constructor(
-    private bot:Bot
-){}
+    constructor(
+        private bot: Bot
+    ){}
 
 
 
-find(
-itemName:string
-){
+    find(
+        itemName: string
+    ){
 
 
-const recipes =
-this.bot.recipesFor(
-    itemName,
-    null,
-    1,
-    null
-);
+        const mcData =
+            mcDataLoader(this.bot.version);
 
 
 
-if(
-recipes.length === 0
-)
-return null;
+        const item =
+            mcData.itemsByName[itemName];
 
 
 
-return {
+        if(!item){
 
-recipe:recipes[0],
+            return null;
 
-requiresTable:
-recipes[0].requiresTable
-
-};
+        }
 
 
 
-}
+        const recipes =
+            this.bot.recipesFor(
+                item.id,
+                null,
+                1,
+                null
+            );
+
+
+
+        if(
+            recipes.length === 0
+        )
+            return null;
+
+
+
+        return {
+
+            recipe: recipes[0],
+
+            requiresTable:
+                recipes[0].requiresTable
+
+        };
+
+
+    }
 
 
 }
