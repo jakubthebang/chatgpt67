@@ -9,6 +9,8 @@ export class MovementManager {
 
     private bot: Bot;
 
+    private followInterval?: NodeJS.Timeout;
+
 
 
     constructor(
@@ -23,6 +25,7 @@ export class MovementManager {
 
     private createMovements(){
 
+
         const movements =
             new Movements(
                 this.bot
@@ -35,10 +38,14 @@ export class MovementManager {
 
         movements.allowParkour = true;
 
+        movements.allowSprinting = true;
+
 
         return movements;
 
     }
+
+
 
 
 
@@ -92,6 +99,12 @@ export class MovementManager {
 
 
 
+        this.startSpeedSync(
+            playerName
+        );
+
+
+
         this.bot.chat(
             `Following ${playerName}`
         );
@@ -105,12 +118,73 @@ export class MovementManager {
 
 
 
-    goto(
-        x: number,
-        y: number,
-        z: number
+    private startSpeedSync(
+        playerName:string
     ){
 
+
+        if(this.followInterval){
+
+            clearInterval(
+                this.followInterval
+            );
+
+        }
+
+
+
+        this.followInterval =
+            setInterval(()=>{
+
+
+                const player =
+                    this.bot.players[playerName];
+
+
+
+                if(
+                    !player ||
+                    !player.entity
+                )
+                    return;
+
+
+
+                const velocity =
+                    player.entity.velocity;
+
+
+
+                const speed =
+                    Math.sqrt(
+                        velocity.x ** 2 +
+                        velocity.z ** 2
+                    );
+
+
+
+                this.bot.setControlState(
+                    "sprint",
+                    speed > 0.15
+                );
+
+
+            },500);
+
+
+    }
+
+
+
+
+
+
+
+    goto(
+        x:number,
+        y:number,
+        z:number
+    ){
 
 
         const movements =
@@ -151,6 +225,29 @@ export class MovementManager {
 
 
         this.bot.pathfinder.stop();
+
+
+
+        if(this.followInterval){
+
+            clearInterval(
+                this.followInterval
+            );
+
+            this.followInterval = undefined;
+
+        }
+
+
+
+        this.bot.setControlState(
+            "sprint",
+            false
+        );
+
+
+
+        this.bot.clearControlStates();
 
 
 
