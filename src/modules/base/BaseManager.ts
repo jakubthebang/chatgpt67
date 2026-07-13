@@ -7,89 +7,88 @@ import { StorageManager } from "./StorageManager";
 export class BaseManager {
 
 
-private home:HomeLocation;
+    private home: HomeLocation;
 
-private chests:ChestScanner;
+    private chests: ChestScanner;
 
-private storage:StorageManager;
-
-
-
-constructor(
-private bot:Bot
-){
-
-
-this.home =
-new HomeLocation();
-
-
-this.chests =
-new ChestScanner();
-
-
-this.storage =
-new StorageManager();
-
-
-}
+    private storage: StorageManager;
 
 
 
-setHome(){
-
-this.home.set(
-this.bot.entity.position
-);
+    constructor(
+        private bot: Bot
+    ) {
 
 
-this.bot.chat(
-"Home saved"
-);
+        this.home =
+            new HomeLocation();
 
 
-}
+        this.chests =
+            new ChestScanner(this.bot);
 
 
+        this.storage =
+            new StorageManager(this.bot);
 
-getHome(){
 
-return this.home.get();
-
-}
+    }
 
 
 
-scanStorage(){
+    setHome() {
 
-return this.chests.findChests();
-
-}
-
-
-
-status(){
+        this.home.set(
+            this.bot.entity.position
+        );
 
 
-return {
-
-home:
-this.home.exists(),
-
-
-chests:
-this.scanStorage().length,
+        this.bot.chat(
+            "Home saved"
+        );
 
 
-items:
-this.storage.getItems().length
+    }
 
 
-};
+
+    getHome() {
+
+        return this.home.get();
+
+    }
 
 
-}
 
+    scanStorage() {
+
+        return this.chests.findChests();
+
+    }
+
+
+
+    status() {
+
+
+        return {
+
+            home:
+                this.home.exists(),
+
+
+            chests:
+                this.scanStorage().length,
+
+
+            items:
+                this.storage.getItems().length
+
+
+        };
+
+
+    }
 
 
 }
