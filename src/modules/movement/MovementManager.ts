@@ -5,6 +5,7 @@ import { JumpController } from "./JumpController";
 import { EnvironmentScanner } from "../environment/EnvironmentScanner";
 import { PathDecisionSystem } from "./PathDecisionSystem";
 import { RotationController } from "./RotationController";
+import { ObstacleHandler } from "./ObstacleHandler";
 
 
 const {
@@ -21,30 +22,41 @@ export class MovementManager {
 
     private jump: JumpController;
 
+
     private scanner: EnvironmentScanner;
 
     private decision: PathDecisionSystem;
 
     private rotation: RotationController;
 
+    private obstacle: ObstacleHandler;
+
+
+
     private rotationTimer?: NodeJS.Timeout;
+
+    private obstacleTimer?: NodeJS.Timeout;
+
 
 
     private followTarget?: string;
 
+
     private stuckTimer?: NodeJS.Timeout;
+
 
 
     private lastPosition = {
 
-        x: 0,
-        y: 0,
-        z: 0
+        x:0,
+        y:0,
+        z:0
 
     };
 
 
     private stuckCounter = 0;
+
 
 
 
@@ -60,15 +72,21 @@ export class MovementManager {
 
     ){
 
+
         this.bot = bot;
 
         this.jump = jump;
+
+
 
 
         this.scanner =
             new EnvironmentScanner(
                 bot
             );
+
+
+
 
 
         this.decision =
@@ -81,10 +99,30 @@ export class MovementManager {
             );
 
 
+
+
+
+
         this.rotation =
             new RotationController(
                 bot
             );
+
+
+
+
+
+        this.obstacle =
+            new ObstacleHandler(
+
+                bot,
+
+                jump,
+
+                this.scanner
+
+            );
+
 
 
     }
@@ -113,7 +151,6 @@ export class MovementManager {
         movements.allowSprinting = true;
 
 
-        // zapnuté kvôli 1 block jumpom
         movements.allowParkour = true;
 
 
@@ -168,8 +205,8 @@ export class MovementManager {
 
 
 
-
         this.stop();
+
 
 
 
@@ -196,7 +233,6 @@ export class MovementManager {
 
 
 
-
         this.bot.pathfinder.setMovements(
 
             this.createMovements()
@@ -207,8 +243,8 @@ export class MovementManager {
 
 
 
-        this.bot.pathfinder.setGoal(
 
+        this.bot.pathfinder.setGoal(
 
             new GoalFollow(
 
@@ -218,9 +254,7 @@ export class MovementManager {
 
             ),
 
-
             true
-
 
         );
 
@@ -232,6 +266,10 @@ export class MovementManager {
         this.startStuckDetection();
 
 
+        this.startObstacleCheck();
+
+
+
 
 
 
@@ -240,6 +278,45 @@ export class MovementManager {
             `Following ${playerName}`
 
         );
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    private startObstacleCheck(){
+
+
+        if(this.obstacleTimer)
+            return;
+
+
+
+
+        this.obstacleTimer =
+            setInterval(()=>{
+
+
+
+                if(!this.followTarget)
+                    return;
+
+
+
+                this.obstacle.checkObstacle();
+
+
+
+
+            },200);
+
 
 
     }
@@ -263,7 +340,9 @@ export class MovementManager {
     ){
 
 
+
         this.stop();
+
 
 
 
@@ -291,6 +370,7 @@ export class MovementManager {
             )
 
         );
+
 
 
     }
@@ -326,11 +406,8 @@ export class MovementManager {
 
 
 
-
             if(
-
                 this.decision.shouldRecalculate()
-
             ){
 
 
@@ -348,7 +425,6 @@ export class MovementManager {
 
             const pos =
                 this.bot.entity.position;
-
 
 
 
@@ -415,15 +491,14 @@ export class MovementManager {
 
 
 
-
             this.lastPosition = {
 
 
-                x: pos.x,
+                x:pos.x,
 
-                y: pos.y,
+                y:pos.y,
 
-                z: pos.z
+                z:pos.z
 
 
             };
@@ -449,9 +524,9 @@ export class MovementManager {
     private recalculatePath(){
 
 
+
         if(!this.followTarget)
             return;
-
 
 
 
@@ -471,9 +546,7 @@ export class MovementManager {
 
 
 
-            this.bot.pathfinder.setGoal(
-                null
-            );
+            this.bot.pathfinder.setGoal(null);
 
 
 
@@ -495,7 +568,6 @@ export class MovementManager {
 
                 this.bot.pathfinder.setGoal(
 
-
                     new GoalFollow(
 
                         player.entity,
@@ -504,9 +576,7 @@ export class MovementManager {
 
                     ),
 
-
                     true
-
 
                 );
 
@@ -517,6 +587,7 @@ export class MovementManager {
 
 
         }
+
 
 
     }
@@ -551,6 +622,25 @@ export class MovementManager {
 
 
 
+        if(this.obstacleTimer){
+
+
+            clearInterval(
+                this.obstacleTimer
+            );
+
+
+            this.obstacleTimer = undefined;
+
+
+        }
+
+
+
+
+
+
+
         if(this.rotationTimer){
 
 
@@ -563,6 +653,7 @@ export class MovementManager {
 
 
         }
+
 
 
 
