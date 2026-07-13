@@ -19,6 +19,9 @@ export class ObstacleHandler {
     private handling = false;
 
 
+    private stuckTime = 0;
+
+
 
     constructor(
 
@@ -47,6 +50,7 @@ export class ObstacleHandler {
 
 
 
+
     checkObstacle(){
 
 
@@ -55,19 +59,27 @@ export class ObstacleHandler {
 
 
 
-        const result =
-            this.scanFront();
-
-
-
-        if(!result)
+        if(!this.scanFront())
             return;
 
 
 
+        this.stuckTime++;
+
+
+
+        // čakáme približne 2 sekundy
+
+        if(this.stuckTime < 8)
+            return;
+
+
+
+        this.stuckTime = 0;
+
+
 
         this.handleObstacle();
-
 
 
     }
@@ -83,7 +95,6 @@ export class ObstacleHandler {
     private scanFront(){
 
 
-
         const pos =
             this.bot.entity.position;
 
@@ -94,28 +105,22 @@ export class ObstacleHandler {
 
 
 
-        const distance = 1;
-
-
-
         const x =
             Math.floor(
-                pos.x - Math.sin(yaw) * distance
+                pos.x - Math.sin(yaw)
             );
 
 
 
         const z =
             Math.floor(
-                pos.z + Math.cos(yaw) * distance
+                pos.z + Math.cos(yaw)
             );
 
 
 
         const y =
-            Math.floor(
-                pos.y
-            );
+            Math.floor(pos.y);
 
 
 
@@ -141,11 +146,7 @@ export class ObstacleHandler {
 
 
 
-
-
-        return (
-            block.boundingBox === "block"
-        );
+        return block.boundingBox === "block";
 
 
     }
@@ -161,117 +162,51 @@ export class ObstacleHandler {
     private async handleObstacle(){
 
 
+
         this.handling = true;
 
 
 
 
-        // zastavi pohyb
-
         this.bot.clearControlStates();
 
 
 
+        // najskôr skúsi obísť doprava
 
+        const env =
+            this.scanner.scan();
 
-        // malé cúvnutie
 
-        this.bot.setControlState(
 
-            "back",
 
-            true
 
-        );
 
+        if(!env.right.solid){
 
 
 
-        await this.wait(400);
+            this.bot.setControlState(
+                "right",
+                true
+            );
 
 
 
+            await this.wait(600);
 
-        this.bot.setControlState(
 
-            "back",
 
-            false
+            this.bot.setControlState(
+                "right",
+                false
+            );
 
-        );
 
 
+            this.handling = false;
 
-
-
-
-
-
-        // najskôr skúsi skok
-
-
-        this.jump.enable();
-
-
-
-        this.bot.setControlState(
-
-            "forward",
-
-            true
-
-        );
-
-
-
-        await this.wait(100);
-
-
-
-
-
-        this.bot.setControlState(
-
-            "jump",
-
-            true
-
-        );
-
-
-
-
-        await this.wait(150);
-
-
-
-
-        this.bot.setControlState(
-
-            "jump",
-
-            false
-
-        );
-
-
-
-
-
-        await this.wait(700);
-
-
-
-
-
-
-
-        // ak stále stojí pri stene
-
-        if(this.scanFront()){
-
-
-            this.trySide();
+            return;
 
         }
 
@@ -280,13 +215,69 @@ export class ObstacleHandler {
 
 
 
+
+
+        // potom doľava
+
+        if(!env.left.solid){
+
+
+
+            this.bot.setControlState(
+                "left",
+                true
+            );
+
+
+
+            await this.wait(600);
+
+
+
+            this.bot.setControlState(
+                "left",
+                false
+            );
+
+
+
+            this.handling = false;
+
+            return;
+
+        }
+
+
+
+
+
+
+
+
+        // ak sa nedá obísť cúvne
+
         this.bot.setControlState(
 
-            "forward",
+            "back",
+
+            true
+
+        );
+
+
+
+        await this.wait(700);
+
+
+
+        this.bot.setControlState(
+
+            "back",
 
             false
 
         );
+
 
 
 
@@ -304,111 +295,16 @@ export class ObstacleHandler {
 
 
 
-    private trySide(){
-
-
-
-        const env =
-            this.scanner.scan();
-
-
-
-
-
-        if(!env.right.solid){
-
-
-            this.bot.setControlState(
-
-                "right",
-
-                true
-
-            );
-
-
-            setTimeout(()=>{
-
-
-                this.bot.setControlState(
-
-                    "right",
-
-                    false
-
-                );
-
-
-            },500);
-
-
-
-            return;
-
-        }
-
-
-
-
-
-
-
-
-        if(!env.left.solid){
-
-
-            this.bot.setControlState(
-
-                "left",
-
-                true
-
-            );
-
-
-
-            setTimeout(()=>{
-
-
-                this.bot.setControlState(
-
-                    "left",
-
-                    false
-
-                );
-
-
-            },500);
-
-
-
-        }
-
-
-
-    }
-
-
-
-
-
-
-
-
-
     private wait(
         ms:number
     ){
 
-
         return new Promise(
 
             resolve =>
-                setTimeout(resolve, ms)
+                setTimeout(resolve,ms)
 
         );
-
 
     }
 
