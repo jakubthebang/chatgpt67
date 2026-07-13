@@ -6,33 +6,36 @@ import { TaskManager } from "../core/TaskManager";
 export class StopCommand implements Command {
 
 
-name="stop";
+    name = "stop";
 
 
-description=
-"Stops all tasks";
-
-
-
-constructor(
-private tasks:TaskManager
-){}
+    description =
+        "Stops all tasks";
 
 
 
-execute(
-bot:Bot
-){
-
-this.tasks.cancelAll();
+    constructor(
+        private tasks: TaskManager
+    ){}
 
 
-bot.chat(
-"All tasks stopped."
-);
+
+    execute(
+        bot: Bot,
+        args: string[],
+        username: string
+    ){
 
 
-}
+        this.tasks.cancelAll();
+
+
+        bot.chat(
+            "All tasks stopped."
+        );
+
+
+    }
 
 
 }
