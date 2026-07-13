@@ -3,6 +3,7 @@ import { Bot } from "mineflayer";
 import { EnvironmentScanner } from "../environment/EnvironmentScanner";
 import { PathDecisionSystem } from "./PathDecisionSystem";
 import { ObstacleHandler } from "./ObstacleHandler";
+import { ThoughtLogger } from "../ai/ThoughtLogger";
 
 
 
@@ -19,12 +20,14 @@ export class MovementBrain {
     private obstacle: ObstacleHandler;
 
 
+    private thoughts: ThoughtLogger;
+
+
 
     private timer?: NodeJS.Timeout;
 
 
     private active = false;
-
 
 
 
@@ -56,6 +59,13 @@ export class MovementBrain {
         this.obstacle = obstacle;
 
 
+
+        this.thoughts =
+            new ThoughtLogger(
+                bot
+            );
+
+
     }
 
 
@@ -76,6 +86,23 @@ export class MovementBrain {
 
         this.active = true;
 
+
+
+        this.thinkingLoop();
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    private thinkingLoop(){
 
 
 
@@ -112,15 +139,17 @@ export class MovementBrain {
 
 
 
-        /*
-            1. kontrola prekážok
-        */
-
-
         const environment =
             this.scanner.scan();
 
 
+
+
+
+
+        /*
+            kontrola prekážky
+        */
 
 
         if(
@@ -130,7 +159,17 @@ export class MovementBrain {
         ){
 
 
+
+            this.thoughts.think(
+
+                "Predo mnou je prekážka, analyzujem cestu."
+
+            );
+
+
+
             this.obstacle.checkObstacle();
+
 
 
             return;
@@ -143,8 +182,9 @@ export class MovementBrain {
 
 
 
+
         /*
-            2. kontrola potreby novej cesty
+            kontrola novej cesty
         */
 
 
@@ -155,11 +195,32 @@ export class MovementBrain {
         ){
 
 
+
+            this.thoughts.think(
+
+                "Moja cesta nie je ideálna, hľadám novú."
+
+            );
+
+
+
             return;
 
         }
 
 
+
+
+
+
+
+
+
+        this.thoughts.think(
+
+            "Cesta je voľná, pokračujem za hráčom."
+
+        );
 
 
 
@@ -181,12 +242,17 @@ export class MovementBrain {
 
 
 
+
         if(this.timer){
 
 
+
             clearInterval(
+
                 this.timer
+
             );
+
 
 
             this.timer = undefined;
@@ -195,7 +261,9 @@ export class MovementBrain {
         }
 
 
+
     }
+
 
 
 
