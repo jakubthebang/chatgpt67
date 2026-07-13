@@ -36,7 +36,7 @@ export class TaskManager {
 
         const task = this.get(id);
 
-        if(task) {
+        if (task) {
             task.status = status;
         }
 
@@ -63,6 +63,17 @@ export class TaskManager {
     count() {
 
         return this.tasks.length;
+
+    }
+
+
+    cancelAll() {
+
+        this.tasks.forEach(
+            task => {
+                task.status = "failed";
+            }
+        );
 
     }
 
