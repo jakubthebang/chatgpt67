@@ -5,104 +5,105 @@ import { RecipeFinder } from "./RecipeFinder";
 export class CraftingManager {
 
 
-private recipes: RecipeFinder;
+    private recipes: RecipeFinder;
 
 
 
-constructor(
-    private bot: Bot
-){
+    constructor(
+        private bot: Bot
+    ){
 
-    this.recipes =
-        new RecipeFinder(bot);
+        this.recipes =
+            new RecipeFinder(bot);
 
-}
-
-
-
-
-async craft(
-itemName:string,
-amount:number = 1
-){
-
-
-const recipe =
-this.recipes.find(
-    itemName
-);
-
-
-
-if(!recipe){
-
-    this.bot.chat(
-        `Recipe not found: ${itemName}`
-    );
-
-    return;
-
-}
-
-
-
-const table =
-this.bot.findBlock({
-
-matching:block =>
-block.name === "crafting_table",
-
-maxDistance:32
-
-});
+    }
 
 
 
 
-if(
-recipe.requiresTable &&
-!table
-){
+    async craft(
+        itemName: string,
+        amount: number = 1
+    ){
 
-    this.bot.chat(
-        "Need crafting table nearby"
-    );
 
-    return;
-
-}
+        const recipe =
+            this.recipes.find(
+                itemName
+            );
 
 
 
-try{
+        if(!recipe){
 
+            this.bot.chat(
+                `Recipe not found: ${itemName}`
+            );
 
-await this.bot.craft(
-    recipe.recipe,
-    amount,
-    table
-);
+            return;
 
-
-this.bot.chat(
-    `Crafted ${amount}x ${itemName}`
-);
+        }
 
 
 
-}catch(error){
+        const table =
+            this.bot.findBlock({
+
+                matching: block =>
+                    block.name === "crafting_table",
+
+                maxDistance: 32
+
+            });
 
 
-this.bot.chat(
-    `Cannot craft ${itemName}`
-);
-
-
-}
 
 
 
-}
+        if(
+            recipe.requiresTable &&
+            !table
+        ){
+
+            this.bot.chat(
+                "Need crafting table nearby"
+            );
+
+            return;
+
+        }
+
+
+
+        try{
+
+
+            await this.bot.craft(
+                recipe.recipe,
+                amount,
+                table ?? undefined
+            );
+
+
+            this.bot.chat(
+                `Crafted ${amount}x ${itemName}`
+            );
+
+
+
+        }catch(error){
+
+
+            this.bot.chat(
+                `Cannot craft ${itemName}`
+            );
+
+
+        }
+
+
+
+    }
 
 
 
