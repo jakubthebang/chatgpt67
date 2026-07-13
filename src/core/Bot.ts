@@ -19,7 +19,7 @@ export class BotManager {
     public tasks: TaskManager;
     public ai: AIEngine;
     public events: EventManager;
-    public commands: CommandManager;
+    public commands!: CommandManager;
 
 
 
@@ -27,6 +27,7 @@ export class BotManager {
 
 
         this.tasks = new TaskManager();
+
 
         this.ai = new AIEngine(
             this.tasks
@@ -111,7 +112,7 @@ export class BotManager {
 
         this.bot.on(
             "chat",
-            (username,message)=>{
+            (username, message)=>{
 
 
                 if(username === this.bot.username)
