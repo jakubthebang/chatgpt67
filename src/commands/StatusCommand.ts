@@ -5,29 +5,31 @@ import { Command } from "./Command";
 export class StatusCommand implements Command {
 
 
-name="status";
+    name = "status";
 
 
-description=
-"Shows bot status";
+    description =
+        "Shows bot status";
 
 
 
-execute(
-bot:Bot
-){
+    execute(
+        bot: Bot,
+        args: string[],
+        username: string
+    ){
 
 
-const pos =
-bot.entity.position;
+        const pos =
+            bot.entity.position;
 
 
-bot.chat(
-`HP:${bot.health} Food:${bot.food} XYZ:${Math.floor(pos.x)} ${Math.floor(pos.y)} ${Math.floor(pos.z)}`
-);
+        bot.chat(
+            `HP:${bot.health} Food:${bot.food} XYZ:${Math.floor(pos.x)} ${Math.floor(pos.y)} ${Math.floor(pos.z)}`
+        );
 
 
-}
+    }
 
 
 }
