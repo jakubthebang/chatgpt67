@@ -1,41 +1,48 @@
-export interface Task {
-
-    id:number;
-    name:string;
-    status:
-    "waiting" |
-    "running" |
-    "completed" |
-    "cancelled";
-
-}
+import { Task } from "./Task";
 
 
 export class TaskManager {
 
+    private tasks: Task[] = [];
 
-    private tasks:Task[] = [];
 
-
-    add(task:Task){
+    add(task: Task) {
 
         this.tasks.push(task);
 
     }
 
 
-    getTasks(){
+    getTasks(): Task[] {
 
         return this.tasks;
 
     }
 
 
-    clear(){
+    get(id:string): Task | undefined {
 
-        this.tasks=[];
+        return this.tasks.find(
+            task => task.id === id
+        );
 
     }
 
+
+    remove(id:string) {
+
+        this.tasks =
+            this.tasks.filter(
+                task => task.id !== id
+            );
+
+    }
+
+
+    clear() {
+
+        this.tasks = [];
+
+    }
 
 }
